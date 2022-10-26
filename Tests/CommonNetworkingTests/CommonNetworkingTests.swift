@@ -24,8 +24,6 @@ final class CommonNetworkingTests: XCTestCase {
             
             print("")
         }
-        
-        waitForExpectations(timeout: 10, handler: nil)
     }
     
     
