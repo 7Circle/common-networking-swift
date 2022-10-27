@@ -10,22 +10,23 @@
 import Foundation
 
 public enum AuthorizationType: String {
-    case bearer
+    case bearer = "Bearer"
 }
 
 public final class AuthenticateClient: ApiClient {
+    
+    private func buildAuthenticatedRequest(_ request: inout URLRequest, authType: AuthorizationType, accessToken: String?) {
+        guard let accessToken else { return }
+        request.addValue("\(AuthorizationType.bearer.rawValue) \(accessToken)", forHTTPHeaderField: authType.rawValue)
+    }
     
     public override func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String? = "") async -> ApiResponse<T,E> {
          
         //TODO: add logic that retrive the access token
         
-        let authenticateRequest = request.update {
-            headers {
-                Header.authorization(type: .bearer, value: accessToken!)
-            }
-        }
-        
-        let response: ApiResponse<T,E> = await super.run(authenticateRequest)
+        var authenticatedRequest = request
+        buildAuthenticatedRequest(&authenticatedRequest, authType: .bearer, accessToken: accessToken)
+        let response: ApiResponse<T,E> = await super.run(request)
         let reAuthResponse = await reAuth(response, request)
         return reAuthResponse ?? response
     }
