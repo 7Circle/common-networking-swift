@@ -9,47 +9,30 @@
 //
 import Foundation
 
-public enum AuthorizationType: String {
-    case bearer = "Bearer"
+public enum AuthorizationScheme: String {
+    case Bearer
 }
 
 public final class AuthenticateClient: ApiClient {
     
-    private func buildAuthenticatedRequest(_ request: inout URLRequest, authType: AuthorizationType, accessToken: String?) {
+    private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
         guard let accessToken else { return }
-        request.addValue("\(AuthorizationType.bearer.rawValue) \(accessToken)", forHTTPHeaderField: authType.rawValue)
+        request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
+                         forHTTPHeaderField: Headers.authorization.rawValue)
     }
     
-    public override func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String? = "") async -> ApiResponse<T,E> {
-         
-        //TODO: add logic that retrive the access token
-        
+    public func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String) async -> ApiResponse<T,E> {
         var authenticatedRequest = request
-        buildAuthenticatedRequest(&authenticatedRequest, authType: .bearer, accessToken: accessToken)
-        let response: ApiResponse<T,E> = await super.run(request)
-        let reAuthResponse = await reAuth(response, request)
+        buildAuthenticatedRequest(&authenticatedRequest, authScheme: .Bearer, accessToken: accessToken)
+        let response: ApiResponse<T,E> = await super.run(authenticatedRequest)
+        let reAuthResponse = await reAuth(response, authenticatedRequest)
         return reAuthResponse ?? response
     }
     
     func reAuth<T: Decodable, E: Decodable>(_ response: ApiResponse<T,E>,
                                             _ request: URLRequest) async -> ApiResponse<T,E>? {
-        
-        //TODO: add logic that retrive the access token
-        let tmp: String? = ""
-        guard let refreshToken = tmp else {
-            return nil
-        }
-        
-        guard case let .failure(_, _, httpStatusCode) = response else {
-            return nil
-        }
-        
-        guard httpStatusCode == 401 else {
-            return nil
-        }
-        
-        // TODO
-        
+         
+        //TODO
         return nil
     }
 }

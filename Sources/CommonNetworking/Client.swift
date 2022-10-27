@@ -17,7 +17,7 @@ open class ApiClient {
         self.session = session
     }
     
-    open func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String? = nil) async -> ApiResponse<T, E> {
+    open func run<T: Decodable, E: Decodable>(_ request: URLRequest) async -> ApiResponse<T, E> {
         return await withCheckedContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
                 guard let data else {
@@ -46,7 +46,9 @@ open class ApiClient {
         return .success(response: obj)
     }
     
-    private func failureResponse<T: Decodable, E: Decodable>(from data: Data, of urlResponse: URLResponse?, for error: Error?) -> ApiResponse<T, E> {
+    private func failureResponse<T: Decodable, E: Decodable>(from data: Data,
+                                                             of urlResponse: URLResponse?,
+                                                             for error: Error?) -> ApiResponse<T, E> {
         
         let obj = try? JSONDecoder().decode(E.self, from: data)
         return .failure(
