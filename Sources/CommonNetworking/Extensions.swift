@@ -27,20 +27,6 @@ public extension URLResponse {
     }
 }
 
-public extension URLRequest {
-    mutating func update(@URLRequestEnricherComposer _ enricherComposer: () -> [URLRequestEnricher]) {
-        let enrichers = enricherComposer()
-        execute(enrichers: enrichers, on: &self)
-    }
-    
-    func update(@URLRequestEnricherComposer _ enricherComposer: () -> [URLRequestEnricher]) -> URLRequest {
-        var updatedRequest = self
-        let enrichers = enricherComposer()
-        execute(enrichers: enrichers, on: &updatedRequest)
-        return updatedRequest
-    }
-}
-
 extension URL: URLRequestEnricher {
     public func enrich(request: inout URLRequest) {
         request.url = self
