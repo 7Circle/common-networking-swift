@@ -39,7 +39,32 @@ open class ApiClient {
     }
     
     private func successResponse<T: Decodable, E: Decodable>(from data: Data) -> ApiResponse<T,E>? {
-        guard let obj = try? JSONDecoder().decode(T.self, from: data) else {
+        let formatter = DateFormatter()
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+            
+            formatter.dateFormat = "yyyy-MM-dd"
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+            
+            throw DecodingError.dataCorruptedError(in: container,
+                debugDescription: "Cannot decode date string \(dateString)")
+        }
+        
+        guard let obj = try? decoder.decode(T.self, from: data) else {
             return nil
         }
 
