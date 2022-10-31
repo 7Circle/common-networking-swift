@@ -10,10 +10,14 @@
 
 import Foundation
 
-open class ApiClient {
+public enum AuthorizationScheme: String {
+    case Bearer
+}
+
+open class APIClient {
     private let session: URLSession
     
-    public init(session: URLSession) {
+    public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
     }
     
@@ -69,6 +73,27 @@ open class ApiClient {
         }
 
         return .success(response: obj)
+    }
+    
+    private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
+        guard let accessToken else { return }
+        request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
+                         forHTTPHeaderField: Headers.authorization.rawValue)
+    }
+    
+    public func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String) async -> ApiResponse<T,E> {
+        var authenticatedRequest = request
+        buildAuthenticatedRequest(&authenticatedRequest, authScheme: .Bearer, accessToken: accessToken)
+        let response: ApiResponse<T,E> = await run(authenticatedRequest)
+        let reAuthResponse = await reAuth(response, authenticatedRequest)
+        return reAuthResponse ?? response
+    }
+    
+    func reAuth<T: Decodable, E: Decodable>(_ response: ApiResponse<T,E>,
+                                            _ request: URLRequest) async -> ApiResponse<T,E>? {
+         
+        //TODO
+        return nil
     }
     
     private func failureResponse<T: Decodable, E: Decodable>(from data: Data,
