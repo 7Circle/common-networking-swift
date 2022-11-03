@@ -14,6 +14,29 @@ public enum AuthorizationScheme: String {
     case Bearer
 }
 
+public struct APIRequestSettings {
+    let url: URL
+    let urlPathComponent: String
+    let urlQueryParameters: [String:String]
+    let httpBody: Data?
+    let httpMethod: String
+    let httpHeaderFields: [String:String]
+    
+    public init(url: URL,
+                urlPathComponent: String,
+                urlQueryParameters: [String:String],
+                httpBody: Data?,
+                httpMethod: String,
+                httpHeaderFields: [String:String]) {
+        self.url = url
+        self.urlPathComponent = urlPathComponent
+        self.urlQueryParameters = urlQueryParameters
+        self.httpBody = httpBody
+        self.httpMethod = httpMethod
+        self.httpHeaderFields = httpHeaderFields
+    }
+}
+
 open class APIClient {
     private let session: URLSession
     
@@ -81,19 +104,12 @@ open class APIClient {
                          forHTTPHeaderField: Headers.authorization.rawValue)
     }
     
-    public func run<T: Decodable, E: Decodable>(_ request: URLRequest, accessToken: String) async -> ApiResponse<T,E> {
-        var authenticatedRequest = request
-        buildAuthenticatedRequest(&authenticatedRequest, authScheme: .Bearer, accessToken: accessToken)
-        let response: ApiResponse<T,E> = await run(authenticatedRequest)
-        let reAuthResponse = await reAuth(response, authenticatedRequest)
-        return reAuthResponse ?? response
-    }
-    
-    func reAuth<T: Decodable, E: Decodable>(_ response: ApiResponse<T,E>,
-                                            _ request: URLRequest) async -> ApiResponse<T,E>? {
-         
-        //TODO
-        return nil
+    public func buildRequest(_ settings: APIRequestSettings) -> URLRequest {
+        var request = URLRequest(url: url(settings.url, pathComonent: settings.urlPathComponent, parameters: settings.urlQueryParameters))
+        request.httpMethod = settings.httpMethod
+        request.httpBody = settings.httpBody
+        request.allHTTPHeaderFields = settings.httpHeaderFields
+        return request
     }
     
     private func failureResponse<T: Decodable, E: Decodable>(from data: Data,
@@ -107,4 +123,21 @@ open class APIClient {
             httpStatusCode: urlResponse?.httpStatusCode
         )
     }
+  
+    
+    
+    //TODO: define how to handle 401 retry
+    
+//    public func run<T: Decodable, E: Decodable>(_ request: URLRequest, settings: APIRequestSettings) async -> ApiResponse<T,E> {
+//        let response: ApiResponse<T,E> = await run(request)
+//        let reAuthResponse = await reAuth(response, request)
+//        return reAuthResponse ?? response
+//    }
+//
+//    func reAuth<T: Decodable, E: Decodable>(_ response: ApiResponse<T,E>,
+//                                            _ request: URLRequest) async -> ApiResponse<T,E>? {
+//
+//        //TODO
+//        return nil
+//    }
 }
