@@ -17,14 +17,14 @@ public enum AuthorizationScheme: String {
 public struct APIRequestSettings {
     let url: URL
     let urlPathComponent: String
-    let urlQueryParameters: [String:String]
+    let urlQueryParameters: [String:String]?
     let httpBody: Data?
     let httpMethod: String
     let httpHeaderFields: [String:String]
     
     public init(url: URL,
                 urlPathComponent: String,
-                urlQueryParameters: [String:String],
+                urlQueryParameters: [String:String]?,
                 httpBody: Data?,
                 httpMethod: String,
                 httpHeaderFields: [String:String]) {

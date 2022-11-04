@@ -39,6 +39,11 @@ public func url(_ url: URL, pathComonent: String, parameters: [String:String?]?)
     parameters.forEach { (key: String, value: String?) in
         queryParameters.append(URLQueryItem(name: key, value: value))
     }
+    
+    guard !queryParameters.isEmpty else {
+        return url.appendingPathComponent(pathComonent)
+    }
+    
     return url.appendingPathComponent(pathComonent).appending(queryParameters)!
 }
 
