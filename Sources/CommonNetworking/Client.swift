@@ -91,11 +91,13 @@ open class APIClient {
                 debugDescription: "Cannot decode date string \(dateString)")
         }
         
-        guard let obj = try? decoder.decode(T.self, from: data) else {
-            return nil
+        
+        do {
+            let obj = try decoder.decode(T.self, from: data)
+            return .success(response: obj)
+        } catch(let error) {
+            return .failure(response: nil, error: error, httpStatusCode: nil)
         }
-
-        return .success(response: obj)
     }
     
     private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
