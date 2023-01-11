@@ -10,8 +10,14 @@
 
 import Foundation
 
+public struct NoReply: Codable {}
+
 public enum AuthorizationScheme: String {
     case Bearer
+}
+
+struct ErrorModel: Error {
+    let message: String
 }
 
 public struct APIRequestSettings {
@@ -58,14 +64,14 @@ open class APIClient {
                     return
                 }
                 
-                let response: ApiResponse<T, E> = self.successResponse(from: data) ??
+                let response: ApiResponse<T, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
                 self.failureResponse(from: data, of: urlResponse, for: httpError)
                 continuation.resume(returning: response)
             }.resume()
         }
     }
     
-    private func successResponse<T: Decodable, E: Decodable>(from data: Data) -> ApiResponse<T,E>? {
+    private func successResponse<T: Decodable, E: Decodable>(from data: Data, statusCode: Int) -> ApiResponse<T,E>? {
         let formatter = DateFormatter()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -90,13 +96,21 @@ open class APIClient {
             throw DecodingError.dataCorruptedError(in: container,
                 debugDescription: "Cannot decode date string \(dateString)")
         }
-        
+
+        if statusCode == 204 {
+            let model = NoReply()
+            if let model = model as? T {
+                return .success(response: model)
+            } else {
+                return .failure(response: nil, error: ErrorModel(message: "Error while parsing empty data"), httpStatusCode: statusCode)
+            }
+        }
         
         do {
             let obj = try decoder.decode(T.self, from: data)
             return .success(response: obj)
         } catch(let error) {
-            return .failure(response: nil, error: error, httpStatusCode: nil)
+            return .failure(response: nil, error: error, httpStatusCode: statusCode)
         }
     }
     
