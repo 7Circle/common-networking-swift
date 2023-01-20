@@ -22,14 +22,14 @@ struct ErrorModel: Error {
 
 public struct APIRequestSettings {
     let url: URL
-    let urlPathComponent: String
+    let urlPathComponent: String?
     let urlQueryParameters: [String:String]?
     let httpBody: Data?
     let httpMethod: String
     let httpHeaderFields: [String:String]
     
     public init(url: URL,
-                urlPathComponent: String,
+                urlPathComponent: String?,
                 urlQueryParameters: [String:String]?,
                 httpBody: Data?,
                 httpMethod: String,
