@@ -30,10 +30,10 @@ public struct APIRequestSettings {
     
     public init(url: URL,
                 urlPathComponent: String?,
-                urlQueryParameters: [String:String]?,
-                httpBody: Data?,
+                urlQueryParameters: [String:String]? = nil,
+                httpBody: Data? = nil,
                 httpMethod: HTTPMethod,
-                httpHeaderFields: [String:String]) {
+                httpHeaderFields: [String:String] = [:]) {
         self.url = url
         self.urlPathComponent = urlPathComponent
         self.urlQueryParameters = urlQueryParameters
