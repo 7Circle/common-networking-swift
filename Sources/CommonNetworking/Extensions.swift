@@ -33,26 +33,16 @@ extension URL: URLRequestEnricher {
     }
 }
 
-public func url(_ url: URL, pathComonent: String?, parameters: [String:String?]?) -> URL {
-    guard let parameters else { return url }
-    var queryParameters: [URLQueryItem] = []
-    parameters.forEach { (key: String, value: String?) in
-        queryParameters.append(URLQueryItem(name: key, value: value))
+public func url(_ url: URL, pathComponent: String?, parameters: [String:String?]) -> URL {
+    var resultUrl = url
+    if let pathComponent {
+        resultUrl = resultUrl.appendingPathExtension(pathComponent)
     }
-
-    if let pathComonent  {
-        if !queryParameters.isEmpty {
-            return url.appendingPathComponent(pathComonent).appending(queryParameters)!
-        } else {
-            return url.appendingPathComponent(pathComonent)
-        }
-    } else {
-        if !queryParameters.isEmpty {
-            return url.appending(queryParameters)!
-        } else {
-            return url
-        }
+    var queryParameters: [URLQueryItem] = parameters.compactMap({ URLQueryItem(name: $0, value: $1) })
+    if !queryParameters.isEmpty, let queryUrl = url.appending(queryParameters) {
+        resultUrl = queryUrl
     }
+    return resultUrl
 }
 
 public extension URL {
