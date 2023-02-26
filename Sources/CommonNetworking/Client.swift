@@ -121,7 +121,7 @@ open class APIClient {
     }
     
     public func buildRequest(_ settings: APIRequestSettings) -> URLRequest {
-        var request = URLRequest(url: url(settings.url, pathComonent: settings.urlPathComponent, parameters: settings.urlQueryParameters ?? [:]))
+        var request = URLRequest(url: url(settings.url, pathComponent: settings.urlPathComponent, parameters: settings.urlQueryParameters ?? [:]))
         request.httpMethod = settings.httpMethod.rawValue
         request.httpBody = settings.httpBody
         request.allHTTPHeaderFields = settings.httpHeaderFields
