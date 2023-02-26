@@ -39,7 +39,7 @@ public func url(_ url: URL, pathComponent: String?, parameters: [String:String?]
         resultUrl = resultUrl.appendingPathComponent(pathComponent)
     }
     let queryParameters: [URLQueryItem] = parameters.compactMap({ URLQueryItem(name: $0, value: $1) })
-    if !queryParameters.isEmpty, let queryUrl = url.appending(queryParameters) {
+    if !queryParameters.isEmpty, let queryUrl = resultUrl.appending(queryParameters) {
         resultUrl = queryUrl
     }
     return resultUrl
