@@ -1,9 +1,9 @@
-//                                     _      ___              _
-//     ___    ___      _ _    ___     / |    |_  )     o O O  | |_     ___    __ _    _ __
-//    |_ /   / -_)    | '_|  / _ \    | |     / /     o       |  _|   / -_)  / _` |  | '  \
-//   _/__|   \___|   _|_|_   \___/   _|_|_   /___|   TS__[O]  _\__|   \___|  \__,_|  |_|_|_|
-// _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_|"""""|_|"""""|_|"""""|
-// "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
+//             ___    ___    _____ __      __  ______
+//    o O O   | __|  / _ \  |_   _|\ \    / / |zero12|
+//   o        | _|  | (_) |   | |   \ \/\/ /  |mobile|
+//  TS__[O]  _|_|_   \___/   _|_|_   \_/\_/   | team |
+// {======|_| """ |_|"""""|_|"""""|_|"""""|___|""""""|
+//./o--000'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"""`-0--0-'
 //
 //  Created by Marco Brugnera on 26/10/22.
 //
@@ -29,15 +29,15 @@ public struct APIRequestSettings {
     let urlPathComponent: String?
     let urlQueryParameters: [String:String]?
     let httpBody: Data?
-    let httpMethod: String
+    let httpMethod: HTTPMethod
     let httpHeaderFields: [String:String]
     
     public init(url: URL,
                 urlPathComponent: String?,
-                urlQueryParameters: [String:String]?,
-                httpBody: Data?,
-                httpMethod: String,
-                httpHeaderFields: [String:String]) {
+                urlQueryParameters: [String:String]? = nil,
+                httpBody: Data? = nil,
+                httpMethod: HTTPMethod,
+                httpHeaderFields: [String:String] = [:]) {
         self.url = url
         self.urlPathComponent = urlPathComponent
         self.urlQueryParameters = urlQueryParameters
@@ -175,8 +175,8 @@ open class APIClient {
     }
     
     public func buildRequest(_ settings: APIRequestSettings) -> URLRequest {
-        var request = URLRequest(url: url(settings.url, pathComonent: settings.urlPathComponent, parameters: settings.urlQueryParameters))
-        request.httpMethod = settings.httpMethod
+        var request = URLRequest(url: url(settings.url, pathComponent: settings.urlPathComponent, parameters: settings.urlQueryParameters ?? [:]))
+        request.httpMethod = settings.httpMethod.rawValue
         request.httpBody = settings.httpBody
         request.allHTTPHeaderFields = settings.httpHeaderFields
         return request

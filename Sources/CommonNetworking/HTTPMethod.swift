@@ -4,17 +4,15 @@
 //  TS__[O]  _|_|_   \___/   _|_|_   \_/\_/   | team |
 // {======|_| """ |_|"""""|_|"""""|_|"""""|___|""""""|
 //./o--000'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"""`-0--0-'
-//
-//  Created by Marco Brugnera on 26/10/22.
+
+//  Created by Michele Massaro on 24/02/23.
 //
 
 import Foundation
 
-public enum ApiResponse<T,E> {
-    case failure(response: E?, error: Error?, httpStatusCode: Int?)
-    case success(response: T)
-}
-
-public struct ApiError: Codable {
-    public let errorMessage: String?
+public enum HTTPMethod: String {
+    case get = "GET"
+    case post = "POST"
+    case put = "PUT"
+    case delete = "DELETE"
 }
