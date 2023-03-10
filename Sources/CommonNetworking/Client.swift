@@ -44,7 +44,7 @@ public struct APIClient<E: Decodable> {
         self.session = session
     }
     
-    public func run<T: Decodable>(_ request: URLRequest) async throws -> T? {
+    public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
         return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
                 let statusCode = getStatusCode(urlResponse)
