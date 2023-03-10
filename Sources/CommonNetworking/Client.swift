@@ -10,14 +10,18 @@
 
 import Foundation
 
-public struct NoReply: Codable {}
-
 public enum AuthorizationScheme: String {
     case Bearer
 }
 
 struct ErrorModel: Error {
     let message: String
+}
+
+enum NetworkError: Error {
+    case genericError
+    case clientError
+    case serverError
 }
 
 public struct APIRequestSettings {
@@ -63,12 +67,71 @@ open class APIClient {
                     )
                     return
                 }
-                
-                let response: ApiResponse<T, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
-                self.failureResponse(from: data, of: urlResponse, for: httpError)
-                continuation.resume(returning: response)
+
+                if let networkError = self.checkStatusCode(urlResponse) {
+                    let response: ApiResponse<T, E> = self.failureResponse(from: data, of: urlResponse, for: networkError)
+                    continuation.resume(returning: response)
+                } else {
+                    let response: ApiResponse<T, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
+                    self.failureResponse(from: data, of: urlResponse, for: httpError)
+                    continuation.resume(returning: response)
+                }
             }.resume()
         }
+    }
+
+    open func run<E: Decodable>(_ request: URLRequest) async -> ApiResponse<Void, E> {
+        return await withCheckedContinuation { continuation in
+            session.dataTask(with: request) { (data, urlResponse, httpError) in
+                guard let data else {
+                    continuation.resume(
+                        returning: .failure(
+                            response: nil,
+                            error: httpError,
+                            httpStatusCode: urlResponse?.httpStatusCode
+                        )
+                    )
+                    return
+                }
+
+                if let networkError = self.checkStatusCode(urlResponse) {
+                    let response: ApiResponse<Void, E> = self.failureResponse(from: data, of: urlResponse, for: networkError)
+                    continuation.resume(returning: response)
+                } else {
+                    let response: ApiResponse<Void, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
+                    self.failureResponse(from: data, of: urlResponse, for: httpError)
+                    continuation.resume(returning: response)
+                }
+            }.resume()
+        }
+    }
+
+    private func successResponse<E: Decodable>(from data: Data, statusCode: Int) -> ApiResponse<Void,E>? {
+        let formatter = DateFormatter()
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+
+            formatter.dateFormat = "yyyy-MM-dd"
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(in: container,
+                                                   debugDescription: "Cannot decode date string \(dateString)")
+        }
+            return .success(response: ())
     }
     
     private func successResponse<T: Decodable, E: Decodable>(from data: Data, statusCode: Int) -> ApiResponse<T,E>? {
@@ -95,15 +158,6 @@ open class APIClient {
             
             throw DecodingError.dataCorruptedError(in: container,
                 debugDescription: "Cannot decode date string \(dateString)")
-        }
-
-        if statusCode == 204 {
-            let model = NoReply()
-            if let model = model as? T {
-                return .success(response: model)
-            } else {
-                return .failure(response: nil, error: ErrorModel(message: "Error while parsing empty data"), httpStatusCode: statusCode)
-            }
         }
         
         do {
@@ -139,7 +193,37 @@ open class APIClient {
             httpStatusCode: urlResponse?.httpStatusCode
         )
     }
-  
+
+    private func failureResponse<E: Decodable>(from data: Data,
+                                                             of urlResponse: URLResponse?,
+                                                             for error: Error?) -> ApiResponse<Void, E> {
+
+        let obj = try? JSONDecoder().decode(E.self, from: data)
+        return .failure(
+            response: obj,
+            error: error,
+            httpStatusCode: urlResponse?.httpStatusCode
+        )
+    }
+
+    private func checkStatusCode(_ response: URLResponse?) -> NetworkError? {
+        guard let response = response else {
+            return .genericError
+        }
+        guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+            return .genericError
+        }
+        switch statusCode {
+        case 200..<299:
+            return nil
+        case 400..<499:
+            return .clientError
+        case 500..<599:
+            return .serverError
+        default:
+            return .genericError
+        }
+    }
     
     
     //TODO: define how to handle 401 retry
