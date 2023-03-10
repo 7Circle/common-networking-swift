@@ -14,16 +14,6 @@ public enum AuthorizationScheme: String {
     case Bearer
 }
 
-struct ErrorModel: Error {
-    let message: String
-}
-
-enum NetworkError: Error {
-    case genericError
-    case clientError
-    case serverError
-}
-
 public struct APIRequestSettings {
     let url: URL
     let urlPathComponent: String?
@@ -47,94 +37,39 @@ public struct APIRequestSettings {
     }
 }
 
-open class APIClient {
+public struct APIClient<E: Decodable> {
     private let session: URLSession
     
     public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
     }
     
-    open func run<T: Decodable, E: Decodable>(_ request: URLRequest) async -> ApiResponse<T, E> {
-        return await withCheckedContinuation { continuation in
+    public func run<T: Decodable>(_ request: URLRequest) async throws -> T? {
+        return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
+                let statusCode = getStatusCode(urlResponse)
+                if let networkError: NetworkError<E> = checkFailure(from: data, statusCode: statusCode) {
+                    continuation.resume(throwing: networkError)
+                    return
+                }
+                
                 guard let data else {
-                    continuation.resume(
-                        returning: .failure(
-                            response: nil,
-                            error: httpError,
-                            httpStatusCode: urlResponse?.httpStatusCode
-                        )
-                    )
+                    continuation.resume(throwing: NetworkError<E>.emptyBodyError(statusCode: statusCode))
                     return
                 }
 
-                if let networkError = self.checkStatusCode(urlResponse) {
-                    let response: ApiResponse<T, E> = self.failureResponse(from: data, of: urlResponse, for: networkError)
+                do {
+                    let response: T = try handleResponse(from: data)
                     continuation.resume(returning: response)
-                } else {
-                    let response: ApiResponse<T, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
-                    self.failureResponse(from: data, of: urlResponse, for: httpError)
-                    continuation.resume(returning: response)
+                } catch {
+                    continuation.resume(throwing: NetworkError<E>.decodeError(message: error.localizedDescription,
+                                                                              statusCode: statusCode))
                 }
             }.resume()
         }
-    }
-
-    open func run<E: Decodable>(_ request: URLRequest) async -> ApiResponse<Void, E> {
-        return await withCheckedContinuation { continuation in
-            session.dataTask(with: request) { (data, urlResponse, httpError) in
-                guard let data else {
-                    continuation.resume(
-                        returning: .failure(
-                            response: nil,
-                            error: httpError,
-                            httpStatusCode: urlResponse?.httpStatusCode
-                        )
-                    )
-                    return
-                }
-
-                if let networkError = self.checkStatusCode(urlResponse) {
-                    let response: ApiResponse<Void, E> = self.failureResponse(from: data, of: urlResponse, for: networkError)
-                    continuation.resume(returning: response)
-                } else {
-                    let response: ApiResponse<Void, E> = self.successResponse(from: data, statusCode: urlResponse?.httpStatusCode ?? 0) ??
-                    self.failureResponse(from: data, of: urlResponse, for: httpError)
-                    continuation.resume(returning: response)
-                }
-            }.resume()
-        }
-    }
-
-    private func successResponse<E: Decodable>(from data: Data, statusCode: Int) -> ApiResponse<Void,E>? {
-        let formatter = DateFormatter()
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-
-        decoder.dateDecodingStrategy = .custom { decoder in
-            let container = try decoder.singleValueContainer()
-            let dateString = try container.decode(String.self)
-
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
-            if let date = formatter.date(from: dateString) {
-                return date
-            }
-
-            formatter.dateFormat = "yyyy-MM-dd"
-            if let date = formatter.date(from: dateString) {
-                return date
-            }
-
-            throw DecodingError.dataCorruptedError(in: container,
-                                                   debugDescription: "Cannot decode date string \(dateString)")
-        }
-            return .success(response: ())
     }
     
-    private func successResponse<T: Decodable, E: Decodable>(from data: Data, statusCode: Int) -> ApiResponse<T,E>? {
+    private func handleResponse<T: Decodable>(from data: Data) throws -> T {
         let formatter = DateFormatter()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -160,12 +95,7 @@ open class APIClient {
                 debugDescription: "Cannot decode date string \(dateString)")
         }
         
-        do {
-            let obj = try decoder.decode(T.self, from: data)
-            return .success(response: obj)
-        } catch(let error) {
-            return .failure(response: nil, error: error, httpStatusCode: statusCode)
-        }
+        return try decoder.decode(T.self, from: data)
     }
     
     private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
@@ -182,62 +112,25 @@ open class APIClient {
         return request
     }
     
-    private func failureResponse<T: Decodable, E: Decodable>(from data: Data,
-                                                             of urlResponse: URLResponse?,
-                                                             for error: Error?) -> ApiResponse<T, E> {
-        
-        let obj = try? JSONDecoder().decode(E.self, from: data)
-        return .failure(
-            response: obj,
-            error: error,
-            httpStatusCode: urlResponse?.httpStatusCode
-        )
-    }
-
-    private func failureResponse<E: Decodable>(from data: Data,
-                                                             of urlResponse: URLResponse?,
-                                                             for error: Error?) -> ApiResponse<Void, E> {
-
-        let obj = try? JSONDecoder().decode(E.self, from: data)
-        return .failure(
-            response: obj,
-            error: error,
-            httpStatusCode: urlResponse?.httpStatusCode
-        )
-    }
-
-    private func checkStatusCode(_ response: URLResponse?) -> NetworkError? {
-        guard let response = response else {
-            return .genericError
-        }
-        guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-            return .genericError
-        }
+    private func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
         switch statusCode {
-        case 200..<299:
+        case 200..<399:
             return nil
         case 400..<499:
-            return .clientError
+            return .clientError(body: getErrorBody(from: data), statusCode: statusCode)
         case 500..<599:
-            return .serverError
+            return .serverError(body: getErrorBody(from: data), statusCode: statusCode)
         default:
-            return .genericError
+            return .genericError(body: getErrorBody(from: data), statusCode: statusCode)
         }
     }
     
+    private func getErrorBody<E: Decodable>(from data: Data?) -> E? {
+        guard let data else { return nil }
+        return try? JSONDecoder().decode(E.self, from: data)
+    }
     
-    //TODO: define how to handle 401 retry
-    
-//    public func run<T: Decodable, E: Decodable>(_ request: URLRequest, settings: APIRequestSettings) async -> ApiResponse<T,E> {
-//        let response: ApiResponse<T,E> = await run(request)
-//        let reAuthResponse = await reAuth(response, request)
-//        return reAuthResponse ?? response
-//    }
-//
-//    func reAuth<T: Decodable, E: Decodable>(_ response: ApiResponse<T,E>,
-//                                            _ request: URLRequest) async -> ApiResponse<T,E>? {
-//
-//        //TODO
-//        return nil
-//    }
+    private func getStatusCode(_ response: URLResponse?) -> Int {
+        (response as? HTTPURLResponse)?.statusCode ?? -1
+    }
 }
