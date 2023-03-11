@@ -112,7 +112,7 @@ public struct APIClient<E: Decodable> {
         return request
     }
     
-    private func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
+    internal func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
         switch statusCode {
         case 200..<399:
             return nil
