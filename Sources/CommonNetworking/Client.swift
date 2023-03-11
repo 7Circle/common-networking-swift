@@ -130,7 +130,7 @@ public struct APIClient<E: Decodable> {
         return try? JSONDecoder().decode(E.self, from: data)
     }
     
-    private func getStatusCode(_ response: URLResponse?) -> Int {
+    internal func getStatusCode(_ response: URLResponse?) -> Int {
         (response as? HTTPURLResponse)?.statusCode ?? -1
     }
 }
