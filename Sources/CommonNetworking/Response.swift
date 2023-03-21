@@ -19,4 +19,23 @@ public enum NetworkError<E: Decodable>: Error {
     case emptyBodyError(statusCode: Int)
 }
 
+extension NetworkError: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .genericError(_, let statusCode):
+            return "Generic Error: \(statusCode)"
+        case .clientError(_, let statusCode):
+            return "Client Error: \(statusCode)"
+        case .unauthorizedError:
+            return "Unauthorized Error"
+        case .serverError(_, let statusCode):
+            return "Server Error: \(statusCode)"
+        case .decodeError(let message, let statusCode):
+            return "Decode Error: \(statusCode), \(message)"
+        case .emptyBodyError(let statusCode):
+            return "Empty body Error: \(statusCode)"
+        }
+    }
+}
+
 public struct EmptyContent: Decodable {}
