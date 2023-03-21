@@ -10,11 +10,13 @@
 
 import Foundation
 
-public enum ApiResponse<T,E> {
-    case failure(response: E?, error: Error?, httpStatusCode: Int?)
-    case success(response: T)
+public enum NetworkError<E: Decodable>: Error {
+    case genericError(body: E?, statusCode: Int)
+    case clientError(body: E?, statusCode: Int)
+    case unauthorizedError
+    case serverError(body: E?, statusCode: Int)
+    case decodeError(message: String, statusCode: Int)
+    case emptyBodyError(statusCode: Int)
 }
 
-public struct ApiError: Codable {
-    public let errorMessage: String?
-}
+public struct EmptyContent: Decodable {}
