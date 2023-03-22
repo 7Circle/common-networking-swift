@@ -98,7 +98,7 @@ public struct APIClient<E: Decodable> {
         return try decoder.decode(T.self, from: data)
     }
     
-    private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
+    internal func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
         guard let accessToken else { return }
         request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
                          forHTTPHeaderField: Headers.authorization.rawValue)

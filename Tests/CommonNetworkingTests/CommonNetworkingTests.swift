@@ -277,13 +277,14 @@ final class CommonNetworkingTests: XCTestCase {
                                           urlPathComponent: nil,
                                           urlQueryParameters: nil,
                                           httpBody: nil,
-                                          httpMethod: .get)
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
         XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
-        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
     }
 
     // #10: [urlPathComponent: !nil, urlQueryParameters nil, httpBody nil, httpHeaderFields set]
@@ -417,6 +418,20 @@ final class CommonNetworkingTests: XCTestCase {
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // MARK: buildAuthenticatedRequest
+    func testBuildAuthenticatedRequestWithValidAccessKey() {
+        var request = URLRequest(url: URL(string: "https://www.zero12.it")!)
+        let accessToken = UUID().uuidString
+        client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: accessToken)
+        XCTAssertEqual(request.allHTTPHeaderFields, ["Authorization": "Bearer \(accessToken)"])
+    }
+
+    func testBuildAuthenticatedRequestWithNilAccessKey() {
+        var request = URLRequest(url: URL(string: "https://www.zero12.it")!)
+        client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: nil)
+        XCTAssertEqual(request.allHTTPHeaderFields, nil)
     }
 
     //MARK: Utils
