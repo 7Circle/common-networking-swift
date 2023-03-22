@@ -72,7 +72,7 @@ public struct APIClient<E: Decodable> {
     private func handleResponse<T: Decodable>(from data: Data) throws -> T {
         let formatter = DateFormatter()
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.keyDecodingStrategy = .useDefaultKeys
         formatter.calendar = Calendar(identifier: .iso8601)
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.locale = Locale(identifier: "en_US_POSIX")
