@@ -132,6 +132,293 @@ final class CommonNetworkingTests: XCTestCase {
         }
     }
 
+    // MARK: buildRequest
+
+    // #1: [urlPathComponent: nil, urlQueryParameters nil, httpBody nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: nil,
+                                          httpBody: nil,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #2: [urlPathComponent: !nil, urlQueryParameters nil, httpBody nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: nil,
+                                          httpBody: nil,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #3: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: nil,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #4: [urlPathComponent: !nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: nil,
+                                          httpBody: httpBody,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #5: [urlPathComponent: nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: nil,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #6: [urlPathComponent: nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: nil,
+                                          httpBody: httpBody,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #7: [urlPathComponent: nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let httpBody: Data = "body".data(using: .utf8)!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: httpBody,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #8: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields not set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: ["q1":"v1"],
+                                          httpBody: httpBody,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #9: [urlPathComponent: nil, urlQueryParameters nil, httpBody nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: nil,
+                                          httpBody: nil,
+                                          httpMethod: .get)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, [:])
+    }
+
+    // #10: [urlPathComponent: !nil, urlQueryParameters nil, httpBody nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNot() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: nil,
+                                          httpBody: nil,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #11: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: nil,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #12: [urlPathComponent: !nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: nil,
+                                          httpBody: httpBody,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #13: [urlPathComponent: nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: nil,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.httpBody, nil)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #14: [urlPathComponent: nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: nil,
+                                          httpBody: httpBody,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #15: [urlPathComponent: nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let urlQueryParameters = ["q1":"v1"]
+        let httpBody: Data = "body".data(using: .utf8)!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: nil,
+                                          urlQueryParameters: urlQueryParameters,
+                                          httpBody: httpBody,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
+    // #16: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields set]
+    func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
+        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let httpBody: Data = "body".data(using: .utf8)!
+        let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
+        let settings = APIRequestSettings(url: serviceURL,
+                                          urlPathComponent: "test",
+                                          urlQueryParameters: ["q1":"v1"],
+                                          httpBody: httpBody,
+                                          httpMethod: .get,
+                                          httpHeaderFields: httpHeaderFields)
+
+        let request = client.buildRequest(settings)
+        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.httpBody, httpBody)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
+    }
+
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {
         let url = Bundle.module.url(forResource: fileName,
