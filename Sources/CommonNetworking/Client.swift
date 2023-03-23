@@ -69,7 +69,7 @@ public struct APIClient<E: Decodable> {
         }
     }
     
-    private func handleResponse<T: Decodable>(from data: Data) throws -> T {
+    internal func handleResponse<T: Decodable>(from data: Data) throws -> T {
         let formatter = DateFormatter()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .useDefaultKeys

@@ -26,6 +26,14 @@ struct TestError: Error, Codable, Equatable {
 }
 
 struct TestModel: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case dateFirstAvailability = "dateFirstAvailability"
+        case baseUrl = "base_url"
+
+    }
+
     let id: Int
-    let date: Date
+    let dateFirstAvailability: Date
+    let baseUrl: String
 }

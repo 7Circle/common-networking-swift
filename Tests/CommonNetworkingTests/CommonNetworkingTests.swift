@@ -434,6 +434,81 @@ final class CommonNetworkingTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields, nil)
     }
 
+    // MARK: handleResponse
+
+    func testHandleResponseWithValidDataFormat1() {
+        let mockData = mockedDataSourceData(fileName: "response_json_valid_data_1")
+        do {
+            let model: TestModel = try client.handleResponse(from: mockData)
+            XCTAssertEqual(model.id, 1234)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
+            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+        } catch {
+            XCTFail("Failed to parse the model with error: \(error)")
+        }
+    }
+
+    func testHandleResponseWithValidDataFormat2() {
+        let mockData = mockedDataSourceData(fileName: "response_json_valid_data_2")
+        do {
+            let model: TestModel = try client.handleResponse(from: mockData)
+            XCTAssertEqual(model.id, 5678)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
+            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+        } catch {
+            XCTFail("Failed to parse the model with error: \(error)")
+        }
+    }
+
+    func testHandleResponseWithNoConformDataFormat() {
+        let mockData = mockedDataSourceData(fileName: "response_json_invalid_data")
+        do {
+            let _: TestModel = try client.handleResponse(from: mockData)
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+        }
+    }
+
+    func testHandleResponseWithExtraFieldInResponseBody() {
+        let mockData = mockedDataSourceData(fileName: "response_json_extra_field")
+        do {
+            let model: TestModel = try client.handleResponse(from: mockData)
+            XCTAssertEqual(model.id, 4357)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
+            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+        } catch {
+            XCTFail("Failed to parse the model with error: \(error)")
+        }
+    }
+
+    func testHandleResponseWithMissingFieldInResponseBody() {
+        let mockData = mockedDataSourceData(fileName: "response_json_missing_field")
+        do {
+            let _: TestModel = try client.handleResponse(from: mockData)
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+        }
+    }
+
+    func testHandleResponseWithTypeMismatchFieldInResponseBody() {
+        let mockData = mockedDataSourceData(fileName: "response_json_type_mismatch_field")
+        do {
+            let _: TestModel = try client.handleResponse(from: mockData)
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+        }
+    }
+    
+
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {
         let url = Bundle.module.url(forResource: fileName,
@@ -441,5 +516,12 @@ final class CommonNetworkingTests: XCTestCase {
                                     subdirectory: "Mocks")!
         let data = try! Data(contentsOf: url)
         return try? JSONDecoder().decode(T.self, from: data)
+    }
+
+    private func mockedDataSourceData(fileName: String) -> Data {
+        let url = Bundle.module.url(forResource: fileName,
+                                    withExtension: "json",
+                                    subdirectory: "Mocks")!
+        return try! Data(contentsOf: url)
     }
 }
