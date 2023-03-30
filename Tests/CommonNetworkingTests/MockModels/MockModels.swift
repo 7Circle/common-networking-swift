@@ -10,17 +10,6 @@
 
 import Foundation
 
-public enum NetworkErrorMock<E: Decodable>: Error {
-    case genericError(body: E?, statusCode: Int)
-    case clientError(body: E?, statusCode: Int)
-    case unauthorizedError
-    case serverError(body: E?, statusCode: Int)
-    case decodeError(message: String, statusCode: Int)
-    case emptyBodyError(statusCode: Int)
-}
-
-public struct EmptyContentMock: Decodable {}
-
 struct TestError: Error, Codable, Equatable {
     let message: String
 }
@@ -30,7 +19,6 @@ struct TestModel: Decodable {
         case id = "id"
         case dateFirstAvailability = "dateFirstAvailability"
         case baseUrl = "base_url"
-
     }
 
     let id: Int
