@@ -507,7 +507,15 @@ final class CommonNetworkingTests: XCTestCase {
         } catch {
         }
     }
-    
+
+    func testHandleResponseWithEmptyResponseBody() {
+        let mockData = mockedDataSourceData(fileName: "response_json_empty")
+        do {
+            let _: EmptyContent = try client.handleResponse(from: mockData)
+        } catch {
+            XCTFail("Failed to parse the model with error: \(error)")
+        }
+    }
 
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {
