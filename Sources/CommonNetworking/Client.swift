@@ -58,6 +58,15 @@ public struct APIClient<E: Decodable> {
                     return
                 }
 
+                guard !data.isEmpty else {
+                    if let response: T = EmptyContent() as? T {
+                        continuation.resume(returning: response)
+                    } else {
+                        continuation.resume(throwing: NetworkError<E>.decodeError(message: "Expected no content body", statusCode: statusCode))
+                    }
+                    return
+                }
+
                 do {
                     let response: T = try handleResponse(from: data)
                     continuation.resume(returning: response)
