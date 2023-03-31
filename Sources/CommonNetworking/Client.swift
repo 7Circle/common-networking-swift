@@ -69,7 +69,7 @@ public struct APIClient<E: Decodable> {
         }
     }
     
-    private func handleResponse<T: Decodable>(from data: Data) throws -> T {
+    internal func handleResponse<T: Decodable>(from data: Data) throws -> T {
         let formatter = DateFormatter()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .useDefaultKeys
@@ -98,7 +98,7 @@ public struct APIClient<E: Decodable> {
         return try decoder.decode(T.self, from: data)
     }
     
-    private func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
+    internal func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
         guard let accessToken else { return }
         request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
                          forHTTPHeaderField: Headers.authorization.rawValue)
@@ -112,7 +112,7 @@ public struct APIClient<E: Decodable> {
         return request
     }
     
-    private func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
+    internal func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
         switch statusCode {
         case 200..<399:
             return nil
@@ -130,7 +130,7 @@ public struct APIClient<E: Decodable> {
         return try? JSONDecoder().decode(E.self, from: data)
     }
     
-    private func getStatusCode(_ response: URLResponse?) -> Int {
+    internal func getStatusCode(_ response: URLResponse?) -> Int {
         (response as? HTTPURLResponse)?.statusCode ?? -1
     }
 }
