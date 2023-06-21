@@ -12,7 +12,7 @@ let package = Package(
             targets: ["CommonNetworking"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0"))
+        .package(url: "https://bitbucket.org/zero12srl/zero12-libraries-ios-test-utils.git", .upToNextMajor(from: "0.0.1"))
     ],
     targets: [
         .target(
@@ -20,7 +20,10 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "CommonNetworkingTests",
-            dependencies: ["CommonNetworking", "Mocker"],
+            dependencies: [
+                "CommonNetworking",
+                .product(name: "Zero12TestUtils", package: "zero12-libraries-ios-test-utils")
+            ],
             resources: [
                 .copy("Mocks")
             ]),
