@@ -12,7 +12,7 @@ let package = Package(
             targets: ["CommonNetworking"]),
     ],
     dependencies: [
-        .package(url: "https://bitbucket.org/zero12srl/zero12-libraries-ios-test-utils.git", .upToNextMajor(from: "0.0.1"))
+        .package(url: "git@bitbucket.org:zero12srl/zero12-libraries-ios-test-utils.git", .upToNextMajor(from: "0.0.1"))
     ],
     targets: [
         .target(
