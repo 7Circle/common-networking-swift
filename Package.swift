@@ -17,13 +17,12 @@ let package = Package(
     targets: [
         .target(
             name: "CommonNetworking",
-            dependencies: [
-                .product(name: "Mocker", package: "Mocker"),
-            ]),
+            dependencies: []),
         .testTarget(
             name: "CommonNetworkingTests",
             dependencies: [
-                "CommonNetworking"
+                "CommonNetworking",
+                .product(name: "Mocker", package: "Mocker"),
             ],
             resources: [
                 .copy("Mocks")
