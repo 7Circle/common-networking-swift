@@ -8,7 +8,9 @@ final class CommonNetworkingTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        client = APIClient<TestModel>()
+        let configuration = URLSessionConfiguration.default
+        configuration.protocolClasses = [MockingURLProtocol.self]
+        client = APIClient<TestModel>(session: URLSession(configuration: configuration))
     }
 
     override func tearDownWithError() throws {
