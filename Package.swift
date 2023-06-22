@@ -12,7 +12,7 @@ let package = Package(
             targets: ["CommonNetworking"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0"))
+        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
     ],
     targets: [
         .target(
@@ -20,7 +20,10 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "CommonNetworkingTests",
-            dependencies: ["CommonNetworking", "Mocker"],
+            dependencies: [
+                "CommonNetworking",
+                .product(name: "Mocker", package: "Mocker"),
+            ],
             resources: [
                 .copy("Mocks")
             ]),

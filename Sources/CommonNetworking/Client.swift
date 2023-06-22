@@ -10,10 +10,20 @@
 
 import Foundation
 
+///List of all the Authorization schemes managed by the library
 public enum AuthorizationScheme: String {
     case Bearer
 }
 
+///
+///Defines the settings for an HTTP request
+///- Parameters:
+///     - url: base URL of the request
+///     - urlPathComponent: path components to add to the url
+///     - urlQueryParameters: dictionary containing all the query parameters of the request
+///     - httpBody: body of the request
+///     - httpMethod: HTTP method of the request
+///     - httpHeaderFields: dictionary containing all the HTTP header fields of the request
 public struct APIRequestSettings {
     let url: URL
     let urlPathComponent: String?
@@ -39,11 +49,24 @@ public struct APIRequestSettings {
 
 public struct APIClient<E: Decodable> {
     private let session: URLSession
-    
+
+    /// Initialized an instance of the class
+    /// - Parameters:
+    ///     - session: URLSession instance
     public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
     }
-    
+
+    ///Creates a task that retrieves the contents of a URL based on the specific URL request object.
+    ///
+    ///Note: Creates and resumes an URLSessionDataTask internally
+    ///
+    ///- Parameters:
+    ///     - request: A URL request object that provides the URL, cache policy, request type, body data or body stream, and so on
+    ///
+    ///- Returns: Object decoded
+    ///
+    ///- Throws: NetworkError
     public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
         return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
