@@ -102,6 +102,20 @@ public struct APIClient<E: Decodable> {
             }.resume()
         }
     }
+
+    /// Creates a task that retrieves the contents of a URL based on the specific URL request object.
+    ///
+    /// Note: Creates and resumes an URLSessionDataTask internally
+    ///
+    /// - Parameters:
+    ///     - request: A ``APIRequestSettings`` object that provides all the information needed to perform the REST request.
+    ///
+    /// - Returns: Object decoded as T if the API returns a success code and the mapping is successfull.
+    ///
+    /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
+    public func run<T: Decodable>(_ request: APIRequestSettings) async throws -> T {
+        try await run(buildRequest(request))
+    }
     
     internal func handleResponse<T: Decodable>(from data: Data) throws -> T {
         let formatter = DateFormatter()

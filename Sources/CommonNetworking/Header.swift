@@ -10,6 +10,7 @@
 
 import Foundation
 
+/// Common headers to be used in the requests.
 public enum Headers: String {
     case userAgent = "User-Agent"
     case authorization = "Authorization"
