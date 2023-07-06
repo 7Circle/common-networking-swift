@@ -32,6 +32,7 @@ Once done the client can be initialized as follow:
 ```
 let client: APIClient<NetworkErrorDataModel> = APIClient()
 ```
+
 Remember to import `CommonNetworking` in the same file when initializing the client.
 
 After doing so, you are free to run requests as follow:
@@ -49,6 +50,7 @@ do {
     // handle error
 }
 ```
+
 Where `ResponseDataModel` will be the data model that you will define to map the response from
 the API. Remember that that model will need to implement the `Decodable` protocol.
 
