@@ -1,19 +1,21 @@
+<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/zero12-common-networking.jpg" width="653"/>
+
 # Zero12 Common Networking
 
-Common Networking is a library created by the [zero12](https://www.zero12.it/) Mobile Team to
-make REST API call in an easy way, trying to keep to minimum the amount of implementations
-that must be done in a project for the networking component.
+Common Networking is a Swift library created by the [zero12](https://www.zero12.it/) Mobile Team to
+make REST API calls in an easy way, trying to keep to minimum the amount of implementations
+needed for the networking component.
 
 # Overview
 
 Every time a project start an amount of time must be spent to setup the networking layer,
 creating the components needed to start/handle the requests and map the results and errors.
 A possibility is to use big networking libraries that allow to handle every possible scenario,
-but sometimes the need is only to do API calls (get/post/put/delete), receive the response and
+but sometimes the need is only to do API calls (*get*/*post*/*put*/*delete*), receive the response and
 map the returned data or error.
 The purpose of this library is to speed up the bootstrap of a project, taking care of all the
 procedure needed to create REST requests, waiting for the response from the server and mapping
-the result. 
+the result.
 
 ## Quick start
 
@@ -32,7 +34,7 @@ let client: APIClient<NetworkErrorDataModel> = APIClient()
 ```
 Remember to import `CommonNetworking` in the same file when initializing the client.
 
-After doing to you are free to run request as follow:
+After doing so, you are free to run requests as follow:
 ``` swift
 let request = APIRequestSettings(url: "https://my.api.com",
                                  urlPathComponent: "/path",
@@ -58,14 +60,14 @@ error model to map.
 
 You can add Common Networking to an Xcode project by adding it to your project as a package.
 
-> https://github.com(TODO)
+> https://github.com/zero12srl/zero12-common-networking
 
 You can add Common Networking in a [SwiftPM](https://swift.org/package-manager/) project by adding
 it to the `Package.swift`:
 
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/(TODO)", from: "1.0.0")
+  .package(url: "https://github.com/zero12srl/zero12-common-networking", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 
