@@ -10,20 +10,12 @@
 
 import Foundation
 
-///List of all the Authorization schemes managed by the library
+/// List of all the Authorization schemes managed by the library
 public enum AuthorizationScheme: String {
     case Bearer
 }
 
-///
-///Defines the settings for an HTTP request
-///- Parameters:
-///     - url: base URL of the request
-///     - urlPathComponent: path components to add to the url
-///     - urlQueryParameters: dictionary containing all the query parameters of the request
-///     - httpBody: body of the request
-///     - httpMethod: HTTP method of the request
-///     - httpHeaderFields: dictionary containing all the HTTP header fields of the request
+/// Defines the settings for an HTTP request
 public struct APIRequestSettings {
     let url: URL
     let urlPathComponent: String?
@@ -31,7 +23,15 @@ public struct APIRequestSettings {
     let httpBody: Data?
     let httpMethod: HTTPMethod
     let httpHeaderFields: [String:String]
-    
+
+    /// Creates a new APIRequestSettings
+    /// - Parameters:
+    ///     - url: base URL of the request
+    ///     - urlPathComponent: path components to add to the url
+    ///     - urlQueryParameters: dictionary containing all the query parameters of the request
+    ///     - httpBody: body of the request
+    ///     - httpMethod: HTTP method of the request
+    ///     - httpHeaderFields: dictionary containing all the HTTP header fields of the request
     public init(url: URL,
                 urlPathComponent: String?,
                 urlQueryParameters: [String:String]? = nil,
@@ -47,26 +47,28 @@ public struct APIRequestSettings {
     }
 }
 
+/// Client that runs the API requests. A single APIClient can use a single generic error (E) model.
+/// - Generics:
+///     - E: type of the error returned by the APIs
 public struct APIClient<E: Decodable> {
     private let session: URLSession
 
-    /// Initialized an instance of the class
     /// - Parameters:
     ///     - session: URLSession instance
     public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
     }
 
-    ///Creates a task that retrieves the contents of a URL based on the specific URL request object.
+    /// Creates a task that retrieves the contents of a URL based on the specific URL request object.
     ///
-    ///Note: Creates and resumes an URLSessionDataTask internally
+    /// Note: Creates and resumes an URLSessionDataTask internally
     ///
-    ///- Parameters:
-    ///     - request: A URL request object that provides the URL, cache policy, request type, body data or body stream, and so on
+    /// - Parameters:
+    ///     - request: A URLRequest object that provides the URL, cache policy, request type, body data or body stream, and so on.
     ///
-    ///- Returns: Object decoded
+    /// - Returns: Object decoded as T if the API returns a success code and the mapping is successfull.
     ///
-    ///- Throws: NetworkError
+    /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
     public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
         return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
@@ -99,6 +101,20 @@ public struct APIClient<E: Decodable> {
                 }
             }.resume()
         }
+    }
+
+    /// Creates a task that retrieves the contents of a URL based on the specific URL request object.
+    ///
+    /// Note: Creates and resumes an URLSessionDataTask internally
+    ///
+    /// - Parameters:
+    ///     - request: A ``APIRequestSettings`` object that provides all the information needed to perform the REST request.
+    ///
+    /// - Returns: Object decoded as T if the API returns a success code and the mapping is successfull.
+    ///
+    /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
+    public func run<T: Decodable>(_ request: APIRequestSettings) async throws -> T {
+        try await run(buildRequest(request))
     }
     
     internal func handleResponse<T: Decodable>(from data: Data) throws -> T {
@@ -135,7 +151,12 @@ public struct APIClient<E: Decodable> {
         request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
                          forHTTPHeaderField: Headers.authorization.rawValue)
     }
-    
+
+    /// Creates a URLRequest starting from a ``APIRequestSettings`` object.
+    /// - parameters:
+    ///     - settings: ``APIRequestSettings`` with all the information to perform the REST request
+    ///
+    /// - returns: the URLRequest that represents the specified settings.
     public func buildRequest(_ settings: APIRequestSettings) -> URLRequest {
         var request = URLRequest(url: url(settings.url, pathComponent: settings.urlPathComponent, parameters: settings.urlQueryParameters ?? [:]))
         request.httpMethod = settings.httpMethod.rawValue
