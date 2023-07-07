@@ -90,4 +90,4 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 ## About
 
 Made with ❤️ by zero12. 
-Then names and logo are trademarks of zero12 srl.
+The names and logo are trademarks of zero12 srl.
