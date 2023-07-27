@@ -54,6 +54,12 @@ do {
 Where `ResponseDataModel` will be the data model that you will define to map the response from
 the API. Remember that that model will need to implement the `Decodable` protocol.
 
+In case of APIs with an empty response body, like the `204 no content` response,
+an `EmptyContent` object should be used as return type, like this:
+```
+let response: EmptyContent = try await client.run(request)
+```
+
 The APIClient instance is not unique, you can have as many client as you may need, for example one
 in every remote repository. The only constraint is that a single APIClient have only one
 error model to map.
