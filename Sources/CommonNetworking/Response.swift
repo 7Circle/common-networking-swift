@@ -59,4 +59,5 @@ extension NetworkError: CustomStringConvertible {
     }
 }
 
+/// Object to handle empty body response from APIs
 public struct EmptyContent: Decodable {}
