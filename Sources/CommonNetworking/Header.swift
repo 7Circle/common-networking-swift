@@ -15,4 +15,5 @@ public enum Headers: String {
     case userAgent = "User-Agent"
     case authorization = "Authorization"
     case contentType = "Content-Type"
+    case apiKey = "x-api-key"
 }
