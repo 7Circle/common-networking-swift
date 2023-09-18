@@ -4,13 +4,13 @@ import Mocker
 
 final class CommonNetworkingTests: XCTestCase {
 
-    private var client: APIClient<TestModel>!
+    private var client: APIClient<TestError>!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         let configuration = URLSessionConfiguration.default
         configuration.protocolClasses = [MockingURLProtocol.self]
-        client = APIClient<TestModel>(session: URLSession(configuration: configuration))
+        client = APIClient<TestError>(session: URLSession(configuration: configuration))
     }
 
     override func tearDownWithError() throws {
@@ -531,6 +531,253 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed to parse the model with error: \(error)")
         }
     }
+
+    // MARK: - Test run
+
+    func testRunSuccess() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_valid_data_1")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 200,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let model: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTAssertEqual(model.id, 1234)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
+            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+        } catch {
+            XCTFail("Failed to run the api with error: \(error.localizedDescription)")
+        }
+    }
+
+    func testRunEmptyBodySuccess() async {
+        let mockResponseData: Data = Data()
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 204,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let model: EmptyContent =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTAssertEqual(model, EmptyContent())
+        } catch {
+            XCTFail("Failed to run the api with error: \(error.localizedDescription)")
+        }
+    }
+
+    func testRunParsingFailTypeMismatch() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_type_mismatch_field")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 200,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to decode String but found a number instead. For key: base_url, with statusCode 200")
+        }
+    }
+
+    func testRunParsingFailMissingField() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_missing_field")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 200,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Missing field: dateFirstAvailability, with statusCode 200")
+        }
+    }
+
+    func testRunParsingFailMissingValue() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_missing_value")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 200,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected String value but found null instead. For key: base_url, with statusCode 200")
+        }
+    }
+
+    func testRunParsingFailEmptyBody() async {
+        let mockResponseData: Data = Data()
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 200,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to find TestModel but found no content body instead, with statusCode 200")
+        }
+    }
+
+    func testRunFailClientError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 400,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Client Error: 400 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+    func testRunFailServerError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 500,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Server Error: 500 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+    func testRunFailUnauthorizedError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "unauthorized_error_model")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 401,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Unauthorized Error")
+        }
+    }
+
+    func testRunFailGenericError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "https://www.zero12.it")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 800,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            XCTAssertEqual(error.localizedDescription, "Generic Error: 800 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+//    func testRunParsingFailNoData() async {
+//        let mockResponseData: Data? = nil
+//        XCTAssertNotNil(mockResponseData)
+//        let mockServiceURL = URL(string: "https://www.zero12.it")!
+//
+//        let mock: Mock = Mock(
+//            url: mockServiceURL,
+//            ignoreQuery: true,
+//            dataType: .json,
+//            statusCode: 200,
+//            data: [.get: mockResponseData])
+//
+//        mock.register()
+//        do {
+//            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+//            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+//        } catch {
+//            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+//            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to find TestModel but found no content body instead, with statusCode 200")
+//        }
+//    }
 
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {

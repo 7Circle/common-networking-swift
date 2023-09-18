@@ -86,7 +86,7 @@ public struct APIClient<E: Decodable> {
                     if let response: T = EmptyContent() as? T {
                         continuation.resume(returning: response)
                     } else {
-                        continuation.resume(throwing: NetworkError<E>.decodeError(message: "Expected no content body", statusCode: statusCode))
+                        continuation.resume(throwing: NetworkError<E>.decodeError(message: "Expected to find \(T.self) but found no content body instead", statusCode: statusCode))
                     }
                     return
                 }
@@ -197,6 +197,8 @@ public struct APIClient<E: Decodable> {
         switch statusCode {
         case 200..<399:
             return nil
+        case 401:
+            return .unauthorizedError
         case 400..<499:
             return .clientError(body: getErrorBody(from: data), statusCode: statusCode)
         case 500..<599:
