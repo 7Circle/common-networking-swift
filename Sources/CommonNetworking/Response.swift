@@ -1,9 +1,8 @@
-//             ___    ___    _____ __      __  ______
-//    o O O   | __|  / _ \  |_   _|\ \    / / |zero12|
-//   o        | _|  | (_) |   | |   \ \/\/ /  |mobile|
-//  TS__[O]  _|_|_   \___/   _|_|_   \_/\_/   | team |
-// {======|_| """ |_|"""""|_|"""""|_|"""""|___|""""""|
-//./o--000'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"""`-0--0-'
+//  ______   ______    ______   __     __
+// /\  ___\ /\  __ \  /\__  _\ /\ \  _ \ \
+// \ \  __\ \ \ \/\ \ \/_/\ \/ \ \ \/ ".\ \
+//  \ \_\    \ \_____\   \ \_\  \ \__/".~\_\
+//   \/_/     \/_____/    \/_/   \/_/   \/_/
 //
 //  Created by Marco Brugnera on 26/10/22.
 //
@@ -42,6 +41,25 @@ public enum NetworkError<E: Decodable>: Error {
 
 extension NetworkError: CustomStringConvertible {
     public var description: String {
+        switch self {
+        case .genericError(_, let statusCode):
+            return "Generic Error: \(statusCode)"
+        case .clientError(_, let statusCode):
+            return "Client Error: \(statusCode)"
+        case .unauthorizedError:
+            return "Unauthorized Error"
+        case .serverError(_, let statusCode):
+            return "Server Error: \(statusCode)"
+        case .decodeError(let message, let statusCode):
+            return "Decode Error: \(statusCode), \(message)"
+        case .emptyBodyError(let statusCode):
+            return "Empty body Error: \(statusCode)"
+        }
+    }
+}
+
+extension NetworkError: LocalizedError {
+    public var errorDescription: String? {
         switch self {
         case .genericError(_, let statusCode):
             return "Generic Error: \(statusCode)"

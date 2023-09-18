@@ -498,6 +498,17 @@ final class CommonNetworkingTests: XCTestCase {
             let _: TestModel = try client.handleResponse(from: mockData)
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
+            XCTAssertTrue(error is DecodingError, "Unexpected error type: \(type(of: error))")
+        }
+    }
+
+    func testHandleResponseWithMissingValueInResponseBody() {
+        let mockData = mockedDataSourceData(fileName: "response_json_missing_value")
+        do {
+            let _: TestModel = try client.handleResponse(from: mockData)
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is DecodingError, "Unexpected error type: \(type(of: error))")
         }
     }
 
@@ -507,8 +518,10 @@ final class CommonNetworkingTests: XCTestCase {
             let _: TestModel = try client.handleResponse(from: mockData)
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
+            XCTAssertTrue(error is DecodingError, "Unexpected error type: \(type(of: error))")
         }
     }
+
 
     func testHandleResponseWithEmptyResponseBody() {
         let mockData = mockedDataSourceData(fileName: "response_json_empty")

@@ -1,9 +1,8 @@
-//             ___    ___    _____ __      __  ______
-//    o O O   | __|  / _ \  |_   _|\ \    / / |zero12|
-//   o        | _|  | (_) |   | |   \ \/\/ /  |mobile|
-//  TS__[O]  _|_|_   \___/   _|_|_   \_/\_/   | team |
-// {======|_| """ |_|"""""|_|"""""|_|"""""|___|""""""|
-//./o--000'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"""`-0--0-'
+//  ______   ______    ______   __     __
+// /\  ___\ /\  __ \  /\__  _\ /\ \  _ \ \
+// \ \  __\ \ \ \/\ \ \/_/\ \/ \ \ \/ ".\ \
+//  \ \_\    \ \_____\   \ \_\  \ \__/".~\_\
+//   \/_/     \/_____/    \/_/   \/_/   \/_/
 //
 //  Created by Marco Brugnera on 26/10/22.
 //
@@ -66,7 +65,7 @@ public struct APIClient<E: Decodable> {
     /// - Parameters:
     ///     - request: A URLRequest object that provides the URL, cache policy, request type, body data or body stream, and so on.
     ///
-    /// - Returns: Object decoded as T if the API returns a success code and the mapping is successfull.
+    /// - Returns: Object decoded as T if the API returns a success code and the mapping is successful.
     ///
     /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
     public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
@@ -96,8 +95,7 @@ public struct APIClient<E: Decodable> {
                     let response: T = try handleResponse(from: data)
                     continuation.resume(returning: response)
                 } catch {
-                    continuation.resume(throwing: NetworkError<E>.decodeError(message: error.localizedDescription,
-                                                                              statusCode: statusCode))
+                    continuation.resume(throwing: parseDecodingError(error: error, statsCode: statusCode))
                 }
             }.resume()
         }
@@ -142,10 +140,40 @@ public struct APIClient<E: Decodable> {
             throw DecodingError.dataCorruptedError(in: container,
                 debugDescription: "Cannot decode date string \(dateString)")
         }
-        
+
         return try decoder.decode(T.self, from: data)
     }
-    
+
+    internal func parseDecodingError(error: Error, statsCode: Int) -> NetworkError<E> {
+        if let decodingError = error as? DecodingError {
+            switch decodingError {
+            case .typeMismatch(_, let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
+            case .valueNotFound(_, let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
+            case .keyNotFound(let codingKey, _):
+                return NetworkError<E>.decodeError(message: "Missing field: \(codingKey.stringValue)", statusCode: statsCode)
+            case .dataCorrupted(let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
+            default:
+                return NetworkError<E>.decodeError(message: error.localizedDescription, statusCode: statsCode)
+            }
+        }
+        return NetworkError<E>.decodeError(message: error.localizedDescription, statusCode: statsCode)
+    }
+
     internal func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
         guard let accessToken else { return }
         request.addValue("\(AuthorizationScheme.Bearer.rawValue) \(accessToken)",
