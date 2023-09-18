@@ -67,8 +67,8 @@ extension NetworkError: LocalizedError {
             return "Client Error: \(statusCode) \(String(describing: body))"
         case .unauthorizedError:
             return "Unauthorized Error"
-        case .serverError(_, let statusCode):
-            return "Server Error: \(statusCode)"
+        case .serverError(let body, let statusCode):
+            return "Server Error: \(statusCode) \(String(describing: body))"
         case .decodeError(let message, let statusCode):
             return "Decode Error: \(statusCode), \(message)"
         case .emptyBodyError(let statusCode):
