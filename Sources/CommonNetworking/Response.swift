@@ -61,10 +61,10 @@ extension NetworkError: CustomStringConvertible {
 extension NetworkError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .genericError(_, let statusCode):
-            return "Generic Error: \(statusCode)"
-        case .clientError(_, let statusCode):
-            return "Client Error: \(statusCode)"
+        case .genericError(let body, let statusCode):
+            return "Generic Error: \(statusCode) \(String(describing: body))"
+        case .clientError(let body, let statusCode):
+            return "Client Error: \(statusCode) \(String(describing: body))"
         case .unauthorizedError:
             return "Unauthorized Error"
         case .serverError(_, let statusCode):
