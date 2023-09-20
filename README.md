@@ -68,14 +68,14 @@ error model to map.
 
 You can add Common Networking to an Xcode project by adding it to your project as a package.
 
-> https://github.com/zero12srl/zero12-common-networking
+> https://github.com/Digital-Cloud-Labs/common-networking-swift.git
 
 You can add Common Networking in a [SwiftPM](https://swift.org/package-manager/) project by adding
 it to the `Package.swift`:
 
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/zero12srl/zero12-common-networking", .upToNextMajor(from: "1.0.0"))
+  .package(url: "https://github.com/Digital-Cloud-Labs/common-networking-swift.git", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 
