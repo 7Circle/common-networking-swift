@@ -1,4 +1,4 @@
-<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/zero12-common-networking.jpg" width="653"/>
+<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/digitalcloud-common-networking.jpeg" width="653"/>
 
 # Digital Cloud Common Networking
 

@@ -169,7 +169,7 @@ public struct APIClient<E: Decodable> {
         return request
     }
     
-    internal func checkFailure<Er: Decodable>(from data: Data?, statusCode: Int) throws -> NetworkError<Er>? {
+    internal func checkFailure<U: Decodable>(from data: Data?, statusCode: Int) throws -> NetworkError<U>? {
         switch statusCode {
         case 200..<399:
             return nil
@@ -184,9 +184,9 @@ public struct APIClient<E: Decodable> {
         }
     }
     
-    private func getErrorBody<Er: Decodable>(from data: Data?) throws -> Er? {
+    private func getErrorBody<U: Decodable>(from data: Data?) throws -> U? {
         guard let data else { return nil }
-        return try JSONDecoder().decode(Er.self, from: data)
+        return try JSONDecoder().decode(U.self, from: data)
     }
     
     internal func getStatusCode(_ response: URLResponse?) -> Int {
