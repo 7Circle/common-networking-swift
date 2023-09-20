@@ -22,7 +22,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     private func testGetStatusCode(statusCode: Int) async {
         let testExpectation = XCTestExpectation(description: "Status code: \(statusCode)")
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         Mock(url: serviceURL,
              dataType: .json,
              statusCode: statusCode,
@@ -68,7 +68,7 @@ final class CommonNetworkingTests: XCTestCase {
     // MARK: Client - checkFailure
     private func testCheckFailure(statusCode: Int) async -> (Data, URLResponse) {
         let mockModel: TestError? = mockedDataSource(fileName: "error_model")
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         Mock(url: serviceURL,
              dataType: .json,
              statusCode: statusCode,
@@ -81,7 +81,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testCheckFailureForASuccessedAPIResponse() async {
         let testExpectation = XCTestExpectation(description: "Check failure return: nil")
         let (data, _) = await testCheckFailure(statusCode: 200)
-        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: 200)
+        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: 200)
         XCTAssertNil(checkFailure)
         testExpectation.fulfill()
     }
@@ -90,7 +90,7 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .clientError")
         let mockStatusCode = 400
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
         case .clientError(let body, let statusCode):
@@ -106,7 +106,7 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .serverError")
         let mockStatusCode = 500
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
         case .serverError(let body, let statusCode):
@@ -122,7 +122,7 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .genericError")
         let mockStatusCode = 1000
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
         case .genericError(let body, let statusCode):
@@ -138,7 +138,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #1: [urlPathComponent: nil, urlQueryParameters nil, httpBody nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: nil,
                                           urlQueryParameters: nil,
@@ -146,7 +146,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -154,7 +154,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #2: [urlPathComponent: !nil, urlQueryParameters nil, httpBody nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: "test",
                                           urlQueryParameters: nil,
@@ -162,7 +162,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -170,7 +170,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #3: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: "test",
@@ -179,7 +179,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -187,7 +187,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #4: [urlPathComponent: !nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: "test",
@@ -196,7 +196,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -204,7 +204,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #5: [urlPathComponent: nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: nil,
@@ -213,7 +213,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -221,7 +221,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #6: [urlPathComponent: nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: nil,
@@ -230,7 +230,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -238,7 +238,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #7: [urlPathComponent: nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let httpBody: Data = "body".data(using: .utf8)!
         let settings = APIRequestSettings(url: serviceURL,
@@ -248,7 +248,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -256,7 +256,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #8: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields not set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsNotSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: "test",
@@ -265,7 +265,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -273,7 +273,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #9: [urlPathComponent: nil, urlQueryParameters nil, httpBody nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: nil,
@@ -283,7 +283,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -291,7 +291,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #10: [urlPathComponent: !nil, urlQueryParameters nil, httpBody nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNilAndHttpHeaderFieldsNot() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
                                           urlPathComponent: "test",
@@ -301,7 +301,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -309,7 +309,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #11: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
@@ -320,7 +320,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -328,7 +328,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #12: [urlPathComponent: !nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
@@ -339,7 +339,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -347,7 +347,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #13: [urlPathComponent: nil, urlQueryParameters !nil, httpBody nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
@@ -358,7 +358,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -366,7 +366,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #14: [urlPathComponent: nil, urlQueryParameters nil, httpBody !nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
@@ -377,7 +377,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -385,7 +385,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #15: [urlPathComponent: nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let urlQueryParameters = ["q1":"v1"]
         let httpBody: Data = "body".data(using: .utf8)!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
@@ -397,7 +397,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -405,7 +405,7 @@ final class CommonNetworkingTests: XCTestCase {
 
     // #16: [urlPathComponent: !nil, urlQueryParameters !nil, httpBody !nil, httpHeaderFields set]
     func testBuildRequestWithSettingsUrlPathComponentNotNilAndUrlQueryParametersNotNilAndHttpBodyNotNilAndHttpHeaderFieldsSet() {
-        let serviceURL: URL = URL(string: "https://www.zero12.it")!
+        let serviceURL: URL = URL(string: "https://www.digitalCloud.it")!
         let httpBody: Data = "body".data(using: .utf8)!
         let httpHeaderFields = ["Authorization": "Bearer \(UUID().uuidString)"]
         let settings = APIRequestSettings(url: serviceURL,
@@ -416,7 +416,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "https://www.zero12.it/test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "https://www.digitalCloud.it/test?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -424,14 +424,14 @@ final class CommonNetworkingTests: XCTestCase {
 
     // MARK: buildAuthenticatedRequest
     func testBuildAuthenticatedRequestWithValidAccessKey() {
-        var request = URLRequest(url: URL(string: "https://www.zero12.it")!)
+        var request = URLRequest(url: URL(string: "https://www.digitalCloud.it")!)
         let accessToken = UUID().uuidString
         client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: accessToken)
         XCTAssertEqual(request.allHTTPHeaderFields, ["Authorization": "Bearer \(accessToken)"])
     }
 
     func testBuildAuthenticatedRequestWithNilAccessKey() {
-        var request = URLRequest(url: URL(string: "https://www.zero12.it")!)
+        var request = URLRequest(url: URL(string: "https://www.digitalCloud.it")!)
         client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: nil)
         XCTAssertEqual(request.allHTTPHeaderFields, nil)
     }
@@ -447,7 +447,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -462,7 +462,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -486,7 +486,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -537,7 +537,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunSuccess() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_valid_data_1")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -548,13 +548,13 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let model: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let model: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTAssertEqual(model.id, 1234)
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.zero12.it")
+            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
         } catch {
             XCTFail("Failed to run the api with error: \(error.localizedDescription)")
         }
@@ -563,7 +563,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunEmptyBodySuccess() async {
         let mockResponseData: Data = Data()
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -574,7 +574,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let model: EmptyContent =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let model: EmptyContent =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTAssertEqual(model, EmptyContent())
         } catch {
             XCTFail("Failed to run the api with error: \(error.localizedDescription)")
@@ -584,7 +584,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunParsingFailTypeMismatch() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_type_mismatch_field")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -595,7 +595,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
@@ -606,7 +606,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunParsingFailMissingField() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_missing_field")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -617,7 +617,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
@@ -628,7 +628,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunParsingFailMissingValue() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_missing_value")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -639,18 +639,19 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             XCTAssertEqual(error.localizedDescription, "Decode Error: Expected String value but found null instead. For key: base_url, with statusCode 200")
+//            XCTAssertEqual(error as! NetworkError<TestError>, .decodeError(message: "Expected String value but found null instead. For key: base_url", statusCode: 200))
         }
     }
 
     func testRunParsingFailEmptyBody() async {
         let mockResponseData: Data = Data()
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -661,18 +662,18 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to find TestModel but found no content body instead, with statusCode 200")
+            XCTAssertEqual(error.localizedDescription, "Empty body Error: Expected to find TestModel but found no content body instead, with statusCode 200")
         }
     }
 
     func testRunFailClientError() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -683,7 +684,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
@@ -694,7 +695,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunFailServerError() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -705,7 +706,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
@@ -716,7 +717,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunFailUnauthorizedError() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "unauthorized_error_model")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -727,7 +728,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
@@ -738,7 +739,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testRunFailGenericError() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "error_model")
         XCTAssertNotNil(mockResponseData)
-        let mockServiceURL = URL(string: "https://www.zero12.it")!
+        let mockServiceURL = URL(string: "https://www.digitalCloud.it")!
 
         let mock: Mock = Mock(
             url: mockServiceURL,
@@ -749,35 +750,13 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.digitalCloud.it")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             XCTAssertEqual(error.localizedDescription, "Generic Error: 800 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
         }
     }
-
-//    func testRunParsingFailNoData() async {
-//        let mockResponseData: Data? = nil
-//        XCTAssertNotNil(mockResponseData)
-//        let mockServiceURL = URL(string: "https://www.zero12.it")!
-//
-//        let mock: Mock = Mock(
-//            url: mockServiceURL,
-//            ignoreQuery: true,
-//            dataType: .json,
-//            statusCode: 200,
-//            data: [.get: mockResponseData])
-//
-//        mock.register()
-//        do {
-//            let _: TestModel =  try await client.run(.init(url: URL(string: "https://www.zero12.it")!, urlPathComponent: nil, httpMethod: .get))
-//            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
-//        } catch {
-//            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-//            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to find TestModel but found no content body instead, with statusCode 200")
-//        }
-//    }
 
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {

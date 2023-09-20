@@ -30,13 +30,18 @@ public enum NetworkError<E: Decodable>: Error {
     case serverError(body: E?, statusCode: Int)
     /// Error thrown when the response data can not be mapped to the defined type T. Will try to map the return body with the generic error model (E).
     /// - parameters
-    ///     - body: return type mapped to the generic error model (if possible).
+    ///     - error: the error that causes the failure.
     ///     - statusCode: status code returned by the API.
-    case decodeError(message: String, statusCode: Int)
+    case decodeError(_ error: Error, statusCode: Int)
+    /// Error thrown when the server response is empty.
+    /// - parameters
+    ///     - message: a message describing the cause of the error.
+    ///     - statusCode: status code returned by the API.
+    case emptyBodyError(message: String, statusCode: Int)
     /// Error thrown when the server response is null.
     /// - parameters
     ///     - statusCode: status code returned by the API.
-    case emptyBodyError(statusCode: Int)
+    case invalidResponseBodyError(statusCode: Int)
 }
 
 extension NetworkError: LocalizedError {
@@ -50,11 +55,43 @@ extension NetworkError: LocalizedError {
             return "Unauthorized Error"
         case .serverError(let body, let statusCode):
             return "Server Error: \(statusCode) \(String(describing: body))"
-        case .decodeError(let message, let statusCode):
-            return "Decode Error: \(message), with statusCode \(statusCode)"
-        case .emptyBodyError(let statusCode):
-            return "Empty body Error: \(statusCode)"
+        case .decodeError(let error, let statusCode):
+            return "Decode Error: \(parseDecodingError(error: error)), with statusCode \(statusCode)"
+        case .emptyBodyError(let message, let statusCode):
+            return "Empty body Error: \(message), with statusCode \(statusCode)"
+        case .invalidResponseBodyError(let statusCode):
+            return "Invalid response body Error: \(statusCode)"
         }
+    }
+
+    internal func parseDecodingError(error: Error) -> String {
+        if let decodingError = error as? DecodingError {
+            switch decodingError {
+            case .typeMismatch(_, let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return description
+            case .valueNotFound(_, let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return description
+            case .keyNotFound(let codingKey, _):
+                return "Missing field: \(codingKey.stringValue)"
+            case .dataCorrupted(let context):
+                var description = context.debugDescription
+                if let element = context.codingPath.first {
+                    description += " For key: \(element.stringValue)"
+                }
+                return description
+            default:
+                return error.localizedDescription
+            }
+        }
+        return error.localizedDescription
     }
 }
 

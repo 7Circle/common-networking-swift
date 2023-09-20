@@ -72,13 +72,18 @@ public struct APIClient<E: Decodable> {
         return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
                 let statusCode = getStatusCode(urlResponse)
-                if let networkError: NetworkError<E> = checkFailure(from: data, statusCode: statusCode) {
-                    continuation.resume(throwing: networkError)
+                do {
+                    if let networkError: NetworkError<E> = try checkFailure(from: data, statusCode: statusCode) {
+                        continuation.resume(throwing: networkError)
+                        return
+                    }
+                } catch {
+                    continuation.resume(throwing: NetworkError<E>.decodeError(error, statusCode: statusCode))
                     return
                 }
-                
+
                 guard let data else {
-                    continuation.resume(throwing: NetworkError<E>.emptyBodyError(statusCode: statusCode))
+                    continuation.resume(throwing: NetworkError<E>.invalidResponseBodyError(statusCode: statusCode))
                     return
                 }
 
@@ -86,7 +91,7 @@ public struct APIClient<E: Decodable> {
                     if let response: T = EmptyContent() as? T {
                         continuation.resume(returning: response)
                     } else {
-                        continuation.resume(throwing: NetworkError<E>.decodeError(message: "Expected to find \(T.self) but found no content body instead", statusCode: statusCode))
+                        continuation.resume(throwing: NetworkError<E>.emptyBodyError(message: "Expected to find \(T.self) but found no content body instead", statusCode: statusCode))
                     }
                     return
                 }
@@ -95,7 +100,7 @@ public struct APIClient<E: Decodable> {
                     let response: T = try handleResponse(from: data)
                     continuation.resume(returning: response)
                 } catch {
-                    continuation.resume(throwing: parseDecodingError(error: error, statsCode: statusCode))
+                    continuation.resume(throwing: NetworkError<E>.decodeError(error, statusCode: statusCode))
                 }
             }.resume()
         }
@@ -144,35 +149,6 @@ public struct APIClient<E: Decodable> {
         return try decoder.decode(T.self, from: data)
     }
 
-    internal func parseDecodingError(error: Error, statsCode: Int) -> NetworkError<E> {
-        if let decodingError = error as? DecodingError {
-            switch decodingError {
-            case .typeMismatch(_, let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
-            case .valueNotFound(_, let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
-            case .keyNotFound(let codingKey, _):
-                return NetworkError<E>.decodeError(message: "Missing field: \(codingKey.stringValue)", statusCode: statsCode)
-            case .dataCorrupted(let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return NetworkError<E>.decodeError(message: description, statusCode: statsCode)
-            default:
-                return NetworkError<E>.decodeError(message: error.localizedDescription, statusCode: statsCode)
-            }
-        }
-        return NetworkError<E>.decodeError(message: error.localizedDescription, statusCode: statsCode)
-    }
 
     internal func buildAuthenticatedRequest(_ request: inout URLRequest, authScheme: AuthorizationScheme, accessToken: String?) {
         guard let accessToken else { return }
@@ -193,24 +169,24 @@ public struct APIClient<E: Decodable> {
         return request
     }
     
-    internal func checkFailure<E: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<E>? {
+    internal func checkFailure<Er: Decodable>(from data: Data?, statusCode: Int) throws -> NetworkError<Er>? {
         switch statusCode {
         case 200..<399:
             return nil
         case 401:
             return .unauthorizedError
         case 400..<499:
-            return .clientError(body: getErrorBody(from: data), statusCode: statusCode)
+            return try .clientError(body: getErrorBody(from: data), statusCode: statusCode)
         case 500..<599:
-            return .serverError(body: getErrorBody(from: data), statusCode: statusCode)
+            return try .serverError(body: getErrorBody(from: data), statusCode: statusCode)
         default:
-            return .genericError(body: getErrorBody(from: data), statusCode: statusCode)
+            return try .genericError(body: getErrorBody(from: data), statusCode: statusCode)
         }
     }
     
-    private func getErrorBody<E: Decodable>(from data: Data?) -> E? {
+    private func getErrorBody<Er: Decodable>(from data: Data?) throws -> Er? {
         guard let data else { return nil }
-        return try? JSONDecoder().decode(E.self, from: data)
+        return try JSONDecoder().decode(Er.self, from: data)
     }
     
     internal func getStatusCode(_ response: URLResponse?) -> Int {
