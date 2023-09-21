@@ -162,7 +162,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -179,7 +179,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -196,7 +196,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -265,7 +265,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpMethod: .get)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, [:])
@@ -301,7 +301,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -320,7 +320,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test?q1=v1")
         XCTAssertEqual(request.httpBody, nil)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -339,7 +339,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -416,7 +416,7 @@ final class CommonNetworkingTests: XCTestCase {
                                           httpHeaderFields: httpHeaderFields)
 
         let request = client.buildRequest(settings)
-        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud//test?q1=v1")
+        XCTAssertEqual(request.url!.absoluteString, "www.vargroup.it/digital-cloud/test?q1=v1")
         XCTAssertEqual(request.httpBody, httpBody)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.allHTTPHeaderFields, httpHeaderFields)
@@ -447,7 +447,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
+            XCTAssertEqual(model.baseUrl, "www.vargroup.it/digital-cloud/")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -462,7 +462,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
+            XCTAssertEqual(model.baseUrl, "www.vargroup.it/digital-cloud/")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -486,7 +486,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
+            XCTAssertEqual(model.baseUrl, "www.vargroup.it/digital-cloud/")
         } catch {
             XCTFail("Failed to parse the model with error: \(error)")
         }
@@ -554,7 +554,7 @@ final class CommonNetworkingTests: XCTestCase {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             XCTAssertEqual(dateFormatter.string(from: model.dateFirstAvailability), "2012-02-28")
-            XCTAssertEqual(model.baseUrl, "www.digitalCloud.it")
+            XCTAssertEqual(model.baseUrl, "www.vargroup.it/digital-cloud/")
         } catch {
             XCTFail("Failed to run the api with error: \(error.localizedDescription)")
         }
