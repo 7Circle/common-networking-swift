@@ -1,8 +1,8 @@
-<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/zero12-common-networking.jpg" width="653"/>
+<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/digitalcloud-common-networking.jpeg" width="653"/>
 
-# Zero12 Common Networking
+# Digital Cloud Common Networking
 
-Common Networking is a Swift library created by the [zero12](https://www.zero12.it/) Mobile Team to
+Common Networking is a Swift library created by the *Digital Cloud* Mobile Team to
 make REST API calls in an easy way, trying to keep to minimum the amount of implementations
 needed for the networking component.
 
@@ -68,14 +68,14 @@ error model to map.
 
 You can add Common Networking to an Xcode project by adding it to your project as a package.
 
-> https://github.com/zero12srl/zero12-common-networking
+> https://github.com/Digital-Cloud-Labs/common-networking-swift.git
 
 You can add Common Networking in a [SwiftPM](https://swift.org/package-manager/) project by adding
 it to the `Package.swift`:
 
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/zero12srl/zero12-common-networking", .upToNextMajor(from: "1.0.0"))
+  .package(url: "https://github.com/Digital-Cloud-Labs/common-networking-swift.git", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 
@@ -95,5 +95,5 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 
 ## About
 
-Made with ❤️ by zero12. 
-The names and logo are trademarks of zero12 srl.
+Made with ❤️ by Digital Cloud. 
+The names and logo are trademarks of Digital Cloud srl.
