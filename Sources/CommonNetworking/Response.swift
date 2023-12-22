@@ -15,19 +15,17 @@ public enum NetworkError<E: Decodable>: Error {
     /// - parameters
     ///     - body: return type mapped to the generic error model (if possible).
     ///     - statusCode: status code returned by the API.
-    case genericError(body: E?, statusCode: Int)
-    /// Error thrown when the status code is between 400 and 499, 401 excluded. Will try to map the return body with the generic error model (E).
+    case genericError(body: E?, statusCode: Int, parseResult: ParseResult)
+    /// Error thrown when the status code is between 400 and 499. Will try to map the return body with the generic error model (E).
     /// - parameters
     ///     - body: return type mapped to the generic error model (if possible).
     ///     - statusCode: status code returned by the API.
-    case clientError(body: E?, statusCode: Int)
-    /// Error thrown when the status code is 401. It usually means that the token has expired.
-    case unauthorizedError
+    case clientError(body: E?, statusCode: Int, parseResult: ParseResult)
     /// Error thrown when the status code is between 500 and 599. Will try to map the return body with the generic error model (E).
     /// - parameters
     ///     - body: return type mapped to the generic error model (if possible).
     ///     - statusCode: status code returned by the API.
-    case serverError(body: E?, statusCode: Int)
+    case serverError(body: E?, statusCode: Int, parseResult: ParseResult)
     /// Error thrown when the response data can not be mapped to the defined type T. Will try to map the return body with the generic error model (E).
     /// - parameters
     ///     - error: the error that causes the failure.
@@ -44,19 +42,32 @@ public enum NetworkError<E: Decodable>: Error {
     case invalidResponseBodyError(statusCode: Int)
 }
 
+public enum ParseResult: Equatable {
+    /// Parse result that happens when the response data is correctly mapped to the error generic type E.
+    case success
+    /// Parse result that happens when the response data can not be mapped to the error generic type E. Will try to map the return body with the generic error model (E).
+    /// - parameters
+    ///     - message: the error that causes the failure.
+    case decodeError(message: String)
+    /// Parse result that happens when the server response is empty.
+    /// - parameters
+    ///     - message: a message describing the cause of the error.
+    case emptyBodyError(message: String)
+    /// Parse result that happens when the server response is null.
+    case invalidResponseBodyError
+}
+
 extension NetworkError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .genericError(let body, let statusCode):
+        case .genericError(let body, let statusCode, _):
             return "Generic Error: \(statusCode) \(String(describing: body))"
-        case .clientError(let body, let statusCode):
+        case .clientError(let body, let statusCode, _):
             return "Client Error: \(statusCode) \(String(describing: body))"
-        case .unauthorizedError:
-            return "Unauthorized Error"
-        case .serverError(let body, let statusCode):
+        case .serverError(let body, let statusCode, _):
             return "Server Error: \(statusCode) \(String(describing: body))"
         case .decodeError(let error, let statusCode):
-            return "Decode Error: \(parseDecodingError(error: error)), with statusCode \(statusCode)"
+            return "Decode Error: \(NetworkError.parseDecodingError(error: error)), with statusCode \(statusCode)"
         case .emptyBodyError(let message, let statusCode):
             return "Empty body Error: \(message), with statusCode \(statusCode)"
         case .invalidResponseBodyError(let statusCode):
@@ -64,7 +75,7 @@ extension NetworkError: LocalizedError {
         }
     }
 
-    internal func parseDecodingError(error: Error) -> String {
+    static internal func parseDecodingError(error: Error) -> String {
         if let decodingError = error as? DecodingError {
             switch decodingError {
             case .typeMismatch(_, let context):
