@@ -169,7 +169,7 @@ public struct APIClient<E: Decodable> {
         case 200..<399:
             return nil
         case 400..<499:
-            if data == nil {
+            guard let data else {
                 return .clientError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
             }
             do {
@@ -178,7 +178,7 @@ public struct APIClient<E: Decodable> {
                 return .clientError(body: nil, statusCode: statusCode, parseResult: .decodeError(message: NetworkError<U>.parseDecodingError(error: error)))
             }
         case 500..<599:
-            if data == nil {
+            guard let data else {
                 return .serverError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
             }
             do {
@@ -187,7 +187,7 @@ public struct APIClient<E: Decodable> {
                 return .serverError(body: nil, statusCode: statusCode, parseResult: .decodeError(message: NetworkError<U>.parseDecodingError(error: error)))
             }
         default:
-            if data == nil {
+            guard let data else {
                 return .genericError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
             }
             do {
@@ -198,9 +198,8 @@ public struct APIClient<E: Decodable> {
         }
     }
     
-    private func getErrorBody<U: Decodable>(from data: Data?) throws -> U? {
-        guard let data else { return nil }
-        return try JSONDecoder().decode(U.self, from: data)
+    private func getErrorBody<U: Decodable>(from data: Data) throws -> U? {
+        try JSONDecoder().decode(U.self, from: data)
     }
     
     internal func getStatusCode(_ response: URLResponse?) -> Int {
