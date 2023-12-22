@@ -599,7 +599,7 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to decode String but found a number instead. For key: base_url, with statusCode 200")
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to decode String but found number instead. For key: base_url, with statusCode 200")
         }
     }
 
@@ -688,6 +688,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .clientError(let body, let statusCode):
+                XCTAssertEqual(body?.message, "generic error")
+                XCTAssertEqual(statusCode, 400)
+            default:
+                XCTFail("Wrong error type")
+            }
             XCTAssertEqual(error.localizedDescription, "Client Error: 400 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
         }
     }
@@ -710,6 +718,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .serverError(let body, let statusCode):
+                XCTAssertEqual(body?.message, "generic error")
+                XCTAssertEqual(statusCode, 500)
+            default:
+                XCTFail("Wrong error type")
+            }
             XCTAssertEqual(error.localizedDescription, "Server Error: 500 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
         }
     }
@@ -732,7 +748,44 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Unauthorized Error")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .unauthorizedError(let body):
+                XCTAssertEqual(body?.message, "unauthorized")
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertEqual(error.localizedDescription, "Unauthorized Error: 401 Optional(CommonNetworkingTests.TestError(message: \"unauthorized\"))")
+        }
+    }
+
+    func testRunFailDecodeError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_empty")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "www.vargroup.it/digital-cloud/")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 401,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .decodeError(let error, let statusCode):
+                XCTAssertEqual(error.localizedDescription, "The data couldn’t be read because it is missing.")
+                XCTAssertEqual(statusCode, 401)
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertEqual(error.localizedDescription, "Decode Error: Missing field: message, with statusCode 401")
         }
     }
 
