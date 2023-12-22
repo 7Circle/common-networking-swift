@@ -691,7 +691,7 @@ final class CommonNetworkingTests: XCTestCase {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             let networkError = error as! NetworkError<TestError>
             switch networkError {
-            case .decodeError(_, let statusCode):
+            case .emptyBodyError(_, let statusCode):
                 XCTAssertEqual(statusCode, 200)
             default:
                 XCTFail("Wrong error type")
