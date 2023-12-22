@@ -43,16 +43,17 @@ public enum NetworkError<E: Decodable>: Error {
 }
 
 public enum ParseResult: Equatable {
+    /// Parse result that happens when the response data is correctly mapped to the error generic type E.
     case success
-    /// Parse result when the response data can not be mapped to the defined type T. Will try to map the return body with the generic error model (E).
+    /// Parse result that happens when the response data can not be mapped to the error generic type E. Will try to map the return body with the generic error model (E).
     /// - parameters
     ///     - message: the error that causes the failure.
     case decodeError(message: String)
-    /// Parse result when the server response is empty.
+    /// Parse result that happens when the server response is empty.
     /// - parameters
     ///     - message: a message describing the cause of the error.
     case emptyBodyError(message: String)
-    /// Parse result thrown when the server response is null.
+    /// Parse result that happens when the server response is null.
     case invalidResponseBodyError
 }
 
