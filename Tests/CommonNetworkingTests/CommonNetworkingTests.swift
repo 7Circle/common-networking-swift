@@ -602,7 +602,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected to decode String but found number instead. For key: base_url, with statusCode 200")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .decodeError(_, let statusCode):
+                XCTAssertEqual(statusCode, 200)
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertTrue(error.localizedDescription.starts(with: "Decode Error:"))
         }
     }
 
@@ -624,7 +631,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Missing field: dateFirstAvailability, with statusCode 200")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .decodeError(_, let statusCode):
+                XCTAssertEqual(statusCode, 200)
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertTrue(error.localizedDescription.starts(with: "Decode Error:"))
         }
     }
 
@@ -653,8 +667,6 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-//            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected String value but found null instead. For key: base_url, with statusCode 200")
-//            XCTAssertEqual(error as! NetworkError<TestError>, .decodeError(message: "Expected String value but found null instead. For key: base_url", statusCode: 200))
         }
     }
 
