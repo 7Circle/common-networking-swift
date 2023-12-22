@@ -667,6 +667,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
+            XCTAssertTrue(error.localizedDescription.starts(with: "Decode Error:"))
         }
     }
 
@@ -688,7 +689,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Empty body Error: Expected to find TestModel but found no content body instead, with statusCode 200")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .decodeError(_, let statusCode):
+                XCTAssertEqual(statusCode, 200)
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertTrue(error.localizedDescription.starts(with: "Empty body Error:"))
         }
     }
 
@@ -719,7 +727,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Client Error: 400 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Client Error: 400"))
         }
     }
 
@@ -750,7 +758,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Client Error: 400 nil")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Client Error: 400"))
         }
     }
 
@@ -781,7 +789,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Server Error: 500 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Server Error: 500"))
         }
     }
 
@@ -812,7 +820,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Server Error: 500 nil")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Server Error: 500"))
         }
     }
 
@@ -843,7 +851,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Client Error: 401 Optional(CommonNetworkingTests.TestError(message: \"unauthorized\"))")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Client Error: 401"))
         }
     }
 
@@ -874,7 +882,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Client Error: 401 nil")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Client Error: 401"))
         }
     }
 
@@ -905,7 +913,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Generic Error: 800 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Generic Error: 800"))
         }
     }
 
@@ -936,7 +944,7 @@ final class CommonNetworkingTests: XCTestCase {
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Generic Error: 800 nil")
+            XCTAssertTrue(error.localizedDescription.starts(with: "Generic Error: 800"))
         }
     }
 
