@@ -72,13 +72,8 @@ public struct APIClient<E: Decodable> {
         return try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { (data, urlResponse, httpError) in
                 let statusCode = getStatusCode(urlResponse)
-                do {
-                    if let networkError: NetworkError<E> = try checkFailure(from: data, statusCode: statusCode) {
-                        continuation.resume(throwing: networkError)
-                        return
-                    }
-                } catch {
-                    continuation.resume(throwing: NetworkError<E>.decodeError(error, statusCode: statusCode))
+                if let networkError: NetworkError<E> = checkFailure(from: data, statusCode: statusCode) {
+                    continuation.resume(throwing: networkError)
                     return
                 }
 
@@ -169,18 +164,37 @@ public struct APIClient<E: Decodable> {
         return request
     }
     
-    internal func checkFailure<U: Decodable>(from data: Data?, statusCode: Int) throws -> NetworkError<U>? {
+    internal func checkFailure<U: Decodable>(from data: Data?, statusCode: Int) -> NetworkError<U>? {
         switch statusCode {
         case 200..<399:
             return nil
-        case 401:
-            return try .unauthorizedError(body: getErrorBody(from: data))
         case 400..<499:
-            return try .clientError(body: getErrorBody(from: data), statusCode: statusCode)
+            if data == nil {
+                return .clientError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
+            }
+            do {
+                return try .clientError(body: getErrorBody(from: data), statusCode: statusCode, parseResult: .success)
+            } catch {
+                return .clientError(body: nil, statusCode: statusCode, parseResult: .decodeError(message: NetworkError<U>.parseDecodingError(error: error)))
+            }
         case 500..<599:
-            return try .serverError(body: getErrorBody(from: data), statusCode: statusCode)
+            if data == nil {
+                return .serverError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
+            }
+            do {
+                return try .serverError(body: getErrorBody(from: data), statusCode: statusCode, parseResult: .success)
+            } catch {
+                return .serverError(body: nil, statusCode: statusCode, parseResult: .decodeError(message: NetworkError<U>.parseDecodingError(error: error)))
+            }
         default:
-            return try .genericError(body: getErrorBody(from: data), statusCode: statusCode)
+            if data == nil {
+                return .genericError(body: nil, statusCode: statusCode, parseResult: .invalidResponseBodyError)
+            }
+            do {
+                return try .genericError(body: getErrorBody(from: data), statusCode: statusCode, parseResult: .success)
+            } catch {
+                return .genericError(body: nil, statusCode: statusCode, parseResult: .decodeError(message: NetworkError<U>.parseDecodingError(error: error)))
+            }
         }
     }
     

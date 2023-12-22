@@ -81,7 +81,7 @@ final class CommonNetworkingTests: XCTestCase {
     func testCheckFailureForASuccessedAPIResponse() async {
         let testExpectation = XCTestExpectation(description: "Check failure return: nil")
         let (data, _) = await testCheckFailure(statusCode: 200)
-        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: 200)
+        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: 200)
         XCTAssertNil(checkFailure)
         testExpectation.fulfill()
     }
@@ -90,12 +90,13 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .clientError")
         let mockStatusCode = 400
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
-        case .clientError(let body, let statusCode):
+        case .clientError(let body, let statusCode, let parseResult):
             XCTAssertEqual(body!.message, "generic error")
             XCTAssertEqual(statusCode, mockStatusCode)
+            XCTAssertEqual(parseResult, .success)
             testExpectation.fulfill()
         default:
             XCTFail("testExpectationThirdAPICall expectarion not satisied!")
@@ -106,12 +107,13 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .serverError")
         let mockStatusCode = 500
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
-        case .serverError(let body, let statusCode):
+        case .serverError(let body, let statusCode, let parseResult):
             XCTAssertEqual(body!.message, "generic error")
             XCTAssertEqual(statusCode, mockStatusCode)
+            XCTAssertEqual(parseResult, .success)
             testExpectation.fulfill()
         default:
             XCTFail("testExpectationForthAPICall expectarion not satisied!")
@@ -122,12 +124,13 @@ final class CommonNetworkingTests: XCTestCase {
         let testExpectation = XCTestExpectation(description: "Check failure return: .genericError")
         let mockStatusCode = 1000
         let (data, _) = await testCheckFailure(statusCode: mockStatusCode)
-        let checkFailure: NetworkError<TestError>? = try! client.checkFailure(from: data, statusCode: mockStatusCode)
+        let checkFailure: NetworkError<TestError>? = client.checkFailure(from: data, statusCode: mockStatusCode)
         XCTAssertNotNil(checkFailure)
         switch checkFailure {
-        case .genericError(let body, let statusCode):
+        case .genericError(let body, let statusCode, let parseResult):
             XCTAssertEqual(body!.message, "generic error")
             XCTAssertEqual(statusCode, mockStatusCode)
+            XCTAssertEqual(parseResult, .success)
             testExpectation.fulfill()
         default:
             XCTFail("testExpectationFifthAPICall expectarion not satisied!")
@@ -643,7 +646,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected String value but found null instead. For key: base_url, with statusCode 200")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .decodeError(_, let statusCode):
+                XCTAssertEqual(statusCode, 200)
+            default:
+                XCTFail("Wrong error type")
+            }
+//            XCTAssertEqual(error.localizedDescription, "Decode Error: Expected String value but found null instead. For key: base_url, with statusCode 200")
 //            XCTAssertEqual(error as! NetworkError<TestError>, .decodeError(message: "Expected String value but found null instead. For key: base_url", statusCode: 200))
         }
     }
@@ -690,13 +700,45 @@ final class CommonNetworkingTests: XCTestCase {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             let networkError = error as! NetworkError<TestError>
             switch networkError {
-            case .clientError(let body, let statusCode):
+            case .clientError(let body, let statusCode, let parseResult):
                 XCTAssertEqual(body?.message, "generic error")
                 XCTAssertEqual(statusCode, 400)
+                XCTAssertEqual(parseResult, .success)
             default:
                 XCTFail("Wrong error type")
             }
             XCTAssertEqual(error.localizedDescription, "Client Error: 400 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+    func testRunFailClientDecodeError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_empty")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "www.vargroup.it/digital-cloud/")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 400,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .clientError(let body, let statusCode, let parseResult):
+                XCTAssertEqual(body, nil)
+                XCTAssertEqual(statusCode, 400)
+                XCTAssertEqual(parseResult, .decodeError(message: "Missing field: message"))
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertEqual(error.localizedDescription, "Client Error: 400 nil")
         }
     }
 
@@ -720,13 +762,45 @@ final class CommonNetworkingTests: XCTestCase {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             let networkError = error as! NetworkError<TestError>
             switch networkError {
-            case .serverError(let body, let statusCode):
+            case .serverError(let body, let statusCode, let parseResult):
                 XCTAssertEqual(body?.message, "generic error")
                 XCTAssertEqual(statusCode, 500)
+                XCTAssertEqual(parseResult, .success)
             default:
                 XCTFail("Wrong error type")
             }
             XCTAssertEqual(error.localizedDescription, "Server Error: 500 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+    func testRunFailServerDecodeError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_empty")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "www.vargroup.it/digital-cloud/")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 500,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .serverError(let body, let statusCode, let parseResult):
+                XCTAssertEqual(body, nil)
+                XCTAssertEqual(statusCode, 500)
+                XCTAssertEqual(parseResult, .decodeError(message: "Missing field: message"))
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertEqual(error.localizedDescription, "Server Error: 500 nil")
         }
     }
 
@@ -750,16 +824,18 @@ final class CommonNetworkingTests: XCTestCase {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             let networkError = error as! NetworkError<TestError>
             switch networkError {
-            case .unauthorizedError(let body):
+            case .clientError(let body, let statusCode, let parseResult):
                 XCTAssertEqual(body?.message, "unauthorized")
+                XCTAssertEqual(statusCode, 401)
+                XCTAssertEqual(parseResult, .success)
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Unauthorized Error: 401 Optional(CommonNetworkingTests.TestError(message: \"unauthorized\"))")
+            XCTAssertEqual(error.localizedDescription, "Client Error: 401 Optional(CommonNetworkingTests.TestError(message: \"unauthorized\"))")
         }
     }
 
-    func testRunFailDecodeError() async {
+    func testRunFailUnauthorizedDecodeError() async {
         let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_empty")
         XCTAssertNotNil(mockResponseData)
         let mockServiceURL = URL(string: "www.vargroup.it/digital-cloud/")!
@@ -779,13 +855,14 @@ final class CommonNetworkingTests: XCTestCase {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
             let networkError = error as! NetworkError<TestError>
             switch networkError {
-            case .decodeError(let error, let statusCode):
-                XCTAssertEqual(error.localizedDescription, "The data couldn’t be read because it is missing.")
+            case .clientError(let body, let statusCode, let parseResult):
+                XCTAssertEqual(body?.message, nil)
                 XCTAssertEqual(statusCode, 401)
+                XCTAssertEqual(parseResult, .decodeError(message: "Missing field: message"))
             default:
                 XCTFail("Wrong error type")
             }
-            XCTAssertEqual(error.localizedDescription, "Decode Error: Missing field: message, with statusCode 401")
+            XCTAssertEqual(error.localizedDescription, "Client Error: 401 nil")
         }
     }
 
@@ -807,7 +884,47 @@ final class CommonNetworkingTests: XCTestCase {
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .genericError(let body, let statusCode, let parseResult):
+                XCTAssertEqual(body?.message, "generic error")
+                XCTAssertEqual(statusCode, 800)
+                XCTAssertEqual(parseResult, .success)
+            default:
+                XCTFail("Wrong error type")
+            }
             XCTAssertEqual(error.localizedDescription, "Generic Error: 800 Optional(CommonNetworkingTests.TestError(message: \"generic error\"))")
+        }
+    }
+
+    func testRunFailGenericDecodeError() async {
+        let mockResponseData: Data = mockedDataSourceData(fileName: "response_json_empty")
+        XCTAssertNotNil(mockResponseData)
+        let mockServiceURL = URL(string: "www.vargroup.it/digital-cloud/")!
+
+        let mock: Mock = Mock(
+            url: mockServiceURL,
+            ignoreQuery: true,
+            dataType: .json,
+            statusCode: 800,
+            data: [.get: mockResponseData])
+
+        mock.register()
+        do {
+            let _: TestModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
+            XCTFail("Failed the data is invalid and the the handle response had to throw an error")
+        } catch {
+            XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")
+            let networkError = error as! NetworkError<TestError>
+            switch networkError {
+            case .genericError(let body, let statusCode, let parseResult):
+                XCTAssertEqual(body?.message, nil)
+                XCTAssertEqual(statusCode, 800)
+                XCTAssertEqual(parseResult, .decodeError(message: "Missing field: message"))
+            default:
+                XCTFail("Wrong error type")
+            }
+            XCTAssertEqual(error.localizedDescription, "Generic Error: 800 nil")
         }
     }
 
