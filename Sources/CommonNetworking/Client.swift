@@ -174,7 +174,7 @@ public struct APIClient<E: Decodable> {
         case 200..<399:
             return nil
         case 401:
-            return .unauthorizedError
+            return try .unauthorizedError(body: getErrorBody(from: data))
         case 400..<499:
             return try .clientError(body: getErrorBody(from: data), statusCode: statusCode)
         case 500..<599:
