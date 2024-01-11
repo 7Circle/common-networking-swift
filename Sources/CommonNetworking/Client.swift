@@ -51,16 +51,21 @@ public struct APIRequestSettings {
 ///     - E: type of the error returned by the APIs
 public struct APIClient<E: Decodable> {
     private let session: URLSession
+    private let defaultHeaders: [String: String]
 
     /// - Parameters:
     ///     - session: URLSession instance
-    public init(session: URLSession = URLSession(configuration: .default)) {
+    ///     - defaultHeaders: a Key Value map with the headers
+    public init(session: URLSession = URLSession(configuration: .default), defaultHeaders: [String: String] = [:]) {
         self.session = session
+        self.defaultHeaders = defaultHeaders
     }
 
     /// Creates a task that retrieves the contents of a URL based on the specific URL request object.
     ///
-    /// Note: Creates and resumes an URLSessionDataTask internally
+    /// **Note**: Creates and resumes an URLSessionDataTask internally
+    ///
+    /// **Note**: Every header set in the request will override any default header set in the APIClient initialisation.
     ///
     /// - Parameters:
     ///     - request: A URLRequest object that provides the URL, cache policy, request type, body data or body stream, and so on.
@@ -69,8 +74,10 @@ public struct APIClient<E: Decodable> {
     ///
     /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
     public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
+        var completeRequest = request
+        completeRequest.allHTTPHeaderFields = defaultHeaders.merging(request.allHTTPHeaderFields ?? [:]) { _,requestValue in requestValue }
         return try await withCheckedThrowingContinuation { continuation in
-            session.dataTask(with: request) { (data, urlResponse, httpError) in
+            session.dataTask(with: completeRequest) { (data, urlResponse, httpError) in
                 let statusCode = getStatusCode(urlResponse)
                 if let networkError: NetworkError<E> = checkFailure(from: data, statusCode: statusCode) {
                     continuation.resume(throwing: networkError)
