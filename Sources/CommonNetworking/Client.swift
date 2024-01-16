@@ -74,9 +74,9 @@ public struct APIClient<E: Decodable> {
     ///
     /// - Throws: ``NetworkError``. If the type of error supports the mapping the error will contain an instance of E mapped with the error data from the API.
     public func run<T: Decodable>(_ request: URLRequest) async throws -> T {
-        var completeRequest = request
-        completeRequest.allHTTPHeaderFields = defaultHeaders.merging(request.allHTTPHeaderFields ?? [:]) { _,requestValue in requestValue }
+
         return try await withCheckedThrowingContinuation { continuation in
+            let completeRequest = enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
             session.dataTask(with: completeRequest) { (data, urlResponse, httpError) in
                 let statusCode = getStatusCode(urlResponse)
                 if let networkError: NetworkError<E> = checkFailure(from: data, statusCode: statusCode) {
@@ -211,5 +211,11 @@ public struct APIClient<E: Decodable> {
     
     internal func getStatusCode(_ response: URLResponse?) -> Int {
         (response as? HTTPURLResponse)?.statusCode ?? -1
+    }
+
+    internal func enrichURLRequestHTTPHeaderFields(request: URLRequest, defaultHeaders: [String:String]) -> URLRequest {
+        var completeRequest = request
+        completeRequest.allHTTPHeaderFields = defaultHeaders.merging(request.allHTTPHeaderFields ?? [:]) { _, requestValue in requestValue }
+        return completeRequest
     }
 }

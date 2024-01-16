@@ -948,6 +948,61 @@ final class CommonNetworkingTests: XCTestCase {
         }
     }
 
+    // CASE 1: defaultHeaders empty and request.allHTTPHeaderFields empty ==> completeRequest.allHTTPHeaderFields = [:]
+    func testEnrichURLRequestHTTPHeaderFieldsCase1() {
+        let defaultHeaders: [String:String] = [:]
+        let request = URLRequest(url: URL(string: "www.vargroup.it/digital-cloud/")!)
+        let enrichRequest = client.enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
+        XCTAssertEqual(enrichRequest.allHTTPHeaderFields, [:])
+    }
+
+    // CASE 2: defaultHeaders not empty and request.allHTTPHeaderFields empty ==> completeRequest.allHTTPHeaderFields = defaultHeaders
+    func testEnrichURLRequestHTTPHeaderFieldsCase2() {
+        let accessToken = UUID.init().uuidString
+        let defaultHeaders: [String:String] = ["Authorization" : "Bearer \(accessToken)"]
+        let request = URLRequest(url: URL(string: "www.vargroup.it/digital-cloud/")!)
+        let enrichRequest = client.enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
+        XCTAssertEqual(enrichRequest.allHTTPHeaderFields, defaultHeaders)
+    }
+
+    // CASE 3: defaultHeaders empty and request.allHTTPHeaderFields not empty ==> completeRequest.allHTTPHeaderFields = request.allHTTPHeaderFields
+    func testEnrichURLRequestHTTPHeaderFieldsCase3() {
+        let accessToken = UUID.init().uuidString
+        let defaultHeaders: [String:String] = [:]
+        var request = URLRequest(url: URL(string: "www.vargroup.it/digital-cloud/")!)
+        client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: accessToken)
+        let enrichRequest = client.enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
+        XCTAssertEqual(enrichRequest.allHTTPHeaderFields, ["Authorization" : "Bearer \(accessToken)"])
+    }
+
+    // CASE 4: defaultHeaders not empty and request.allHTTPHeaderFields not empty and not overlap ==> completeRequest.allHTTPHeaderFields = defaultHeaders + request.allHTTPHeaderFields
+    func testEnrichURLRequestHTTPHeaderFieldsCase4() {
+        let accessToken = UUID.init().uuidString
+        let defaultHeaders: [String:String] = ["Content-Type" : "application/json"]
+        var request = URLRequest(url: URL(string: "www.vargroup.it/digital-cloud/")!)
+        client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: accessToken)
+        let enrichRequest = client.enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
+        let enrichAllHTTPHeaderFields: [String:String] = [
+            "Content-Type" : "application/json",
+            "Authorization" : "Bearer \(accessToken)"
+        ]
+        XCTAssertEqual(enrichRequest.allHTTPHeaderFields, enrichAllHTTPHeaderFields)
+    }
+
+    // CASE 5: defaultHeaders not empty and request.allHTTPHeaderFields not empty and overlap ==> completeRequest.allHTTPHeaderFields = request.allHTTPHeaderFields
+    func testEnrichURLRequestHTTPHeaderFieldsCase5() {
+        let accessToken = UUID.init().uuidString
+        let enrichAccessToken = UUID.init().uuidString
+        let defaultHeaders: [String:String] = ["Authorization" : "Bearer \(accessToken)"]
+        var request = URLRequest(url: URL(string: "www.vargroup.it/digital-cloud/")!)
+        client.buildAuthenticatedRequest(&request, authScheme: .Bearer, accessToken: enrichAccessToken)
+        let enrichRequest = client.enrichURLRequestHTTPHeaderFields(request: request, defaultHeaders: defaultHeaders)
+        let enrichAllHTTPHeaderFields: [String:String] = [
+            "Authorization" : "Bearer \(enrichAccessToken)"
+        ]
+        XCTAssertEqual(enrichRequest.allHTTPHeaderFields, enrichAllHTTPHeaderFields)
+    }
+
     //MARK: Utils
     private func mockedDataSource<T: Codable>(fileName: String) -> T? {
         let url = Bundle.module.url(forResource: fileName,
