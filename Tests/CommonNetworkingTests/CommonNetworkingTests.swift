@@ -598,7 +598,7 @@ final class CommonNetworkingTests: XCTestCase {
 
         mock.register()
         do {
-            let _: TestModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
+            let _: TestDataModel =  try await client.run(.init(url: URL(string: "www.vargroup.it/digital-cloud/")!, urlPathComponent: nil, httpMethod: .get))
             XCTFail("Failed the data is invalid and the the handle response had to throw an error")
         } catch {
             XCTAssertTrue(error is NetworkError<TestError>, "Unexpected error type: \(type(of: error))")

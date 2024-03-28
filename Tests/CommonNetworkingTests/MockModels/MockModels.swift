@@ -24,3 +24,7 @@ struct TestModel: Decodable {
     let dateFirstAvailability: Date
     let baseUrl: String
 }
+
+struct TestDataModel: Decodable {
+    let data: TestModel
+}
