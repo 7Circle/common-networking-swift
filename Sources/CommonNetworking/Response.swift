@@ -79,25 +79,13 @@ extension NetworkError: LocalizedError {
         if let decodingError = error as? DecodingError {
             switch decodingError {
             case .typeMismatch(_, let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return description
+                return "\(context.debugDescription) For key: \(context.codingPath.map{ $0.stringValue }.joined(separator: " -> "))"
             case .valueNotFound(_, let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return description
+                return "\(context.debugDescription) For key: \(context.codingPath.map{ $0.stringValue }.joined(separator: " -> "))"
             case .keyNotFound(let codingKey, _):
                 return "Missing field: \(codingKey.stringValue)"
             case .dataCorrupted(let context):
-                var description = context.debugDescription
-                if let element = context.codingPath.first {
-                    description += " For key: \(element.stringValue)"
-                }
-                return description
+                return "\(context.debugDescription) For key: \(context.codingPath.map{ $0.stringValue }.joined(separator: " -> "))"
             default:
                 return error.localizedDescription
             }
