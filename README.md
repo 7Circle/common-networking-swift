@@ -1,10 +1,10 @@
-<img alt="logo image" src="https://s3.eu-west-1.amazonaws.com/it.zero12.common-libraries/digitalcloud-common-networking.jpeg" width="653"/>
+# 7Circle Common Networking
 
-# Digital Cloud Common Networking
-
-Common Networking is a Swift library created by the *Digital Cloud* Mobile Team to
+Common Networking is a Swift library created by the *7Circle* Mobile Team to
 make REST API calls in an easy way, trying to keep to minimum the amount of implementations
 needed for the networking component.
+
+Version 1.2.3
 
 # Overview
 
@@ -95,5 +95,5 @@ This library is released under the MIT license. See [LICENSE](LICENSE.txt) for d
 
 ## About
 
-Made with ❤️ by Digital Cloud. 
-The names and logo are trademarks of Digital Cloud srl.
+Made with ❤️ by 7Circle. 
+The names and logo are trademarks of 7Circle srl.
