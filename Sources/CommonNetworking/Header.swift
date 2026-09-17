@@ -11,8 +11,9 @@ import Foundation
 
 /// Common headers to be used in the requests.
 public enum Headers: String {
-    case userAgent = "User-Agent"
+    case acceptLanguage = "Accept-Language"
+    case apiKey = "x-api-key"
     case authorization = "Authorization"
     case contentType = "Content-Type"
-    case apiKey = "x-api-key"
+    case userAgent = "User-Agent"
 }
