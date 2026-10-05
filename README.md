@@ -1,6 +1,6 @@
 # 7Circle Common Networking
 
-Version 1.2.3
+Version 1.2.4
 
 Common Networking is a Swift library created by the *7Circle* Mobile Team to
 make REST API calls in an easy way, trying to keep to minimum the amount of implementations
@@ -75,7 +75,7 @@ it to the `Package.swift`:
 
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/Digital-Cloud-Labs/common-networking-swift.git", .upToNextMajor(from: "1.0.0"))
+  .package(url: "https://github.com/7Circle/common-networking-swift.git", from: "1.0.0")
 ]
 ```
 
