@@ -12,7 +12,7 @@ let package = Package(
             targets: ["CommonNetworking"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/WeTransfer/Mocker.git", exact: Version("3.0.2")),
     ],
     targets: [
         .target(
